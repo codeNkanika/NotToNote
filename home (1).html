@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="view-transition" content="same-origin">
+<title>hi, honeydew 🍈 — welcome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Quicksand:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF6EF;
+    --paper:#FFFDFA;
+    --blush:#F6DCE0;
+    --blush-deep:#EBB8C4;
+    --sage:#C3D1AE;
+    --sage-deep:#8FA377;
+    --sage-ink:#5C6B4C;
+    --brown:#5B4A3E;
+    --brown-soft:#8A7A6C;
+    --gold:#E3A85C;
+    --line:#E7DCCB;
+    --shadow: 0 6px 18px rgba(91,74,62,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--cream);
+    background-image:
+      radial-gradient(circle at 8% 12%, rgba(195,209,174,0.25), transparent 40%),
+      radial-gradient(circle at 92% 30%, rgba(235,184,196,0.25), transparent 40%);
+    font-family:'Quicksand', sans-serif;
+    color:var(--brown);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--blush-deep);color:#fff;}
+
+  /* ---------- washi banner (same as dashboard, for continuity) ---------- */
+  .banner{
+    position:relative;
+    height:150px;
+    overflow:hidden;
+    background:
+      repeating-linear-gradient(45deg, var(--sage) 0 18px, #BFCEA9 18px 19px),
+      linear-gradient(135deg, var(--sage) 0%, #cdd9bb 100%);
+    border-bottom:3px solid var(--paper);
+  }
+  .banner::before{
+    content:"";
+    position:absolute;inset:0;
+    background-image:
+      repeating-linear-gradient(45deg, transparent 0 26px, rgba(255,255,255,0.35) 26px 27px),
+      repeating-linear-gradient(-45deg, transparent 0 26px, rgba(255,255,255,0.2) 26px 27px);
+  }
+  .banner .tape-l{
+    position:absolute; left:8%; top:-10px; width:120px; height:150px;
+    background:repeating-linear-gradient(135deg, var(--blush) 0 12px, var(--blush-deep) 12px 24px);
+    opacity:0.9; transform:rotate(-7deg);
+    box-shadow:var(--shadow);
+    border-radius:2px;
+  }
+  .banner .tape-r{
+    position:absolute; right:6%; top:-10px; width:150px; height:170px;
+    background:repeating-linear-gradient(135deg, var(--gold) 0 12px, #cf9243 12px 24px);
+    opacity:0.85; transform:rotate(9deg);
+    box-shadow:var(--shadow);
+    border-radius:2px;
+  }
+  .banner .stitch{
+    position:absolute; left:0; right:0; bottom:8px;
+    text-align:center;
+    letter-spacing:0.4em;
+    font-size:10px;
+    color:rgba(91,74,62,0.35);
+    font-family:'Space Mono', monospace;
+  }
+
+  /* ---------- hero / cover ---------- */
+  .cover{
+    max-width:820px;
+    margin:0 auto;
+    padding:48px 26px 10px;
+    text-align:center;
+    position:relative;
+  }
+  .mascot-hero{
+    font-size:72px;
+    display:inline-block;
+    animation: bob 4.5s ease-in-out infinite;
+    filter:drop-shadow(0 8px 8px rgba(0,0,0,0.10));
+    view-transition-name: turtle;
+  }
+  @keyframes bob{ 0%,100%{transform:translateY(0) rotate(-2deg);} 50%{transform:translateY(-10px) rotate(2deg);} }
+
+  /* ---------- shared turtle transition (home -> diary) ---------- */
+  @view-transition{
+    navigation: auto;
+  }
+  ::view-transition-group(turtle){
+    animation-duration: 0.7s;
+    animation-timing-function: cubic-bezier(.4,0,.2,1);
+  }
+  ::view-transition-old(turtle),
+  ::view-transition-new(turtle){
+    /* let the turtle glyph itself morph/move without the default crossfade box-squash */
+    mix-blend-mode: normal;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root){
+    animation-duration: 0.45s;
+  }
+
+  .cover h1{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:56px;
+    margin:10px 0 6px;
+    color:var(--brown);
+  }
+  .cover .tagline{
+    font-size:14px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--brown-soft);
+    margin:0 0 14px;
+  }
+  .cover .today{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color:var(--sage-ink);
+    background:var(--paper);
+    border:1px solid var(--line);
+    display:inline-block;
+    padding:6px 14px;
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    margin-bottom:26px;
+  }
+
+  .note{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:16px;
+    color:var(--brown-soft);
+    max-width:480px;
+    margin:0 auto 30px;
+    line-height:1.6;
+  }
+
+  .enter-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:var(--brown);
+    color:#fff9f2;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    letter-spacing:0.03em;
+    padding:14px 30px;
+    border-radius:30px;
+    box-shadow:var(--shadow);
+    border:2px solid var(--paper);
+    cursor:pointer;
+    transition:transform .2s ease, background .2s ease;
+  }
+  .enter-btn:hover{ transform:translateY(-3px); background:#4a3c32; }
+  .enter-btn .seal{
+    background:var(--blush-deep);
+    color:#fff;
+    width:22px;height:22px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;
+  }
+
+  /* ---------- teaser tiles ---------- */
+  .teasers{
+    max-width:1100px;
+    margin:46px auto 10px;
+    padding:0 26px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+  }
+  @media (max-width:800px){ .teasers{grid-template-columns:repeat(2,1fr);} }
+
+  .teaser{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:20px 16px;
+    text-align:center;
+    cursor:pointer;
+    transition:transform .2s ease;
+  }
+  .teaser:hover{ transform:translateY(-5px); }
+  .teaser .icon{
+    font-size:30px;
+    margin-bottom:10px;
+    display:block;
+  }
+  .teaser h4{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:15px;
+    margin:0 0 4px;
+    color:var(--sage-ink);
+  }
+  .teaser p{
+    font-size:11.5px;
+    color:var(--brown-soft);
+    margin:0;
+    line-height:1.5;
+  }
+
+  /* ---------- footer strip ---------- */
+  .quote-strip{
+    max-width:520px;
+    margin:44px auto 0;
+    text-align:center;
+    background:linear-gradient(150deg,#f6dce0,#e9c3cf);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:var(--shadow);
+  }
+  .quote-strip p{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:14px;
+    margin:0;
+    color:var(--brown);
+  }
+
+  footer{
+    text-align:center;
+    font-size:11px;
+    color:var(--brown-soft);
+    letter-spacing:0.08em;
+    padding:36px 0 44px;
+  }
+
+  .float-petal{
+    position:absolute;
+    font-size:20px;
+    opacity:0.7;
+    animation: drift 8s ease-in-out infinite;
+  }
+  .p1{ top:6px; left:14%; animation-delay:0s; }
+  .p2{ top:40px; right:16%; animation-delay:2s; }
+  @keyframes drift{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-12px) rotate(12deg); }
+  }
+</style>
+</head>
+<body>
+
+  <div class="banner">
+    <div class="tape-l"></div>
+    <div class="tape-r"></div>
+    <div class="stitch">✿ ﹒ ﹒ a little corner of the internet, just for me ﹒ ﹒ ✿</div>
+  </div>
+
+  <div class="cover">
+    <span class="float-petal p1">🌸</span>
+    <span class="float-petal p2">🍀</span>
+    <div class="mascot-hero" id="theTurtle">🐢</div>
+    <h1>hi, honeydew 🍈</h1>
+    <p class="tagline">a cozy little diary</p>
+    <div class="today" id="todayLine">loading today...</div>
+    <p class="note">this is where the soft days live — the to-do lists, the little moods,
+      the things worth remembering. come in, get comfy, and write something true.</p>
+    <a class="enter-btn" id="enterBtn" href="index.html">
+      <span class="seal">✎</span> open my diary
+    </a>
+  </div>
+
+  <div class="teasers">
+    <a class="teaser" href="index.html#journal">
+      <span class="icon">📓</span>
+      <h4>journal</h4>
+      <p>today's entry &amp; mood tracker</p>
+    </a>
+    <a class="teaser" href="index.html#calendar">
+      <span class="icon">🗓️</span>
+      <h4>calendar</h4>
+      <p>the week ahead, at a glance</p>
+    </a>
+    <a class="teaser" href="index.html#goals">
+      <span class="icon">🌿</span>
+      <h4>goals</h4>
+      <p>little dreams in progress</p>
+    </a>
+    <a class="teaser" href="index.html#lists">
+      <span class="icon">🎀</span>
+      <h4>lists</h4>
+      <p>bucket list, reading &amp; watchlist</p>
+    </a>
+  </div>
+
+  <div class="quote-strip">
+    <p>"soft days, sweet notes,<br>and a little bit of sparkle." ✨</p>
+  </div>
+
+  <footer>made with 🍓 for slow mornings and softer thoughts</footer>
+
+<script>
+  const todayEl = document.getElementById('todayLine');
+  const now = new Date();
+  const opts = { weekday:'long', month:'long', day:'numeric', year:'numeric' };
+  todayEl.textContent = now.toLocaleDateString('en-US', opts);
+
+  // Native cross-document View Transitions (Chrome/Edge 126+) handle the turtle
+  // flying to its new spot automatically, matched by view-transition-name: turtle.
+  // For browsers that don't support it yet, fake the same effect by hand below.
+  const supportsCrossDocVT = 'onpageswap' in window;
+
+  if (!supportsCrossDocVT) {
+    const enterBtn = document.getElementById('enterBtn');
+    const turtle = document.getElementById('theTurtle');
+
+    enterBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      const dest = enterBtn.getAttribute('href');
+
+      // Where the turtle lives in the diary's banner: left:6%, bottom:-6px, 64px size.
+      const startRect = turtle.getBoundingClientRect();
+      const targetLeft = window.innerWidth * 0.06;
+      const targetTop = 150 - 6 - 64 * 0.6; // banner height 150, sits near the bottom edge
+      const targetSize = 64;
+
+      const scale = targetSize / startRect.width;
+      const dx = targetLeft - startRect.left;
+      const dy = targetTop - startRect.top;
+
+      turtle.style.position = 'fixed';
+      turtle.style.left = startRect.left + 'px';
+      turtle.style.top = startRect.top + 'px';
+      turtle.style.margin = '0';
+      turtle.style.zIndex = '999';
+      turtle.style.animation = 'none';
+      turtle.style.transition = 'transform 0.7s cubic-bezier(.4,0,.2,1)';
+
+      document.body.style.transition = 'opacity 0.5s ease';
+      document.querySelectorAll('.cover > *:not(#theTurtle), .teasers, .quote-strip, footer, .banner .stitch')
+        .forEach(el => { el.style.transition = 'opacity 0.4s ease'; el.style.opacity = '0'; });
+
+      requestAnimationFrame(() => {
+        turtle.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+      });
+
+      setTimeout(() => { window.location.href = dest; }, 680);
+    });
+  }
+</script>
+
+</body>
+</html>
