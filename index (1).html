@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hi, honeydew 🍈 — a cozy little diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Quicksand:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF6EF;
+    --paper:#FFFDFA;
+    --blush:#F6DCE0;
+    --blush-deep:#EBB8C4;
+    --sage:#C3D1AE;
+    --sage-deep:#8FA377;
+    --sage-ink:#5C6B4C;
+    --brown:#5B4A3E;
+    --brown-soft:#8A7A6C;
+    --gold:#E3A85C;
+    --line:#E7DCCB;
+    --shadow: 0 6px 18px rgba(91,74,62,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--cream);
+    background-image:
+      radial-gradient(circle at 8% 12%, rgba(195,209,174,0.25), transparent 40%),
+      radial-gradient(circle at 92% 30%, rgba(235,184,196,0.25), transparent 40%);
+    font-family:'Quicksand', sans-serif;
+    color:var(--brown);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--blush-deep);color:#fff;}
+
+  /* ---------- washi banner ---------- */
+  .banner{
+    position:relative;
+    height:150px;
+    overflow:hidden;
+    background:
+      repeating-linear-gradient(45deg, var(--sage) 0 18px, #BFCE A9 18px 19px),
+      linear-gradient(135deg, var(--sage) 0%, #cdd9bb 100%);
+    border-bottom:3px solid var(--paper);
+  }
+  .banner::before{
+    content:"";
+    position:absolute;inset:0;
+    background-image:
+      repeating-linear-gradient(45deg, transparent 0 26px, rgba(255,255,255,0.35) 26px 27px),
+      repeating-linear-gradient(-45deg, transparent 0 26px, rgba(255,255,255,0.2) 26px 27px);
+  }
+  .banner .tape-r{
+    position:absolute; right:6%; top:-10px; width:150px; height:170px;
+    background:repeating-linear-gradient(135deg, var(--blush) 0 12px, var(--blush-deep) 12px 24px);
+    opacity:0.9; transform:rotate(8deg);
+    box-shadow:var(--shadow);
+    border-radius:2px;
+  }
+  .banner .mascot{
+    position:absolute; left:6%; bottom:-6px; font-size:64px;
+    filter:drop-shadow(0 6px 6px rgba(0,0,0,0.12));
+    animation: bob 4.5s ease-in-out infinite;
+  }
+  @keyframes bob{ 0%,100%{transform:translateY(0) rotate(-2deg);} 50%{transform:translateY(-8px) rotate(2deg);} }
+  .banner .stitch{
+    position:absolute; left:0; right:0; bottom:8px;
+    text-align:center;
+    letter-spacing:0.4em;
+    font-size:10px;
+    color:rgba(91,74,62,0.35);
+    font-family:'Space Mono', monospace;
+  }
+
+  /* ---------- header title ---------- */
+  .titlewrap{
+    text-align:center;
+    margin:34px 0 8px;
+  }
+  .titlewrap h1{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:44px;
+    margin:0;
+    color:var(--brown);
+  }
+  .titlewrap p{
+    margin:6px 0 0;
+    font-size:13px;
+    letter-spacing:0.08em;
+    color:var(--brown-soft);
+    text-transform:uppercase;
+  }
+
+  /* ---------- layout ---------- */
+  .layout{
+    max-width:1240px;
+    margin:0 auto;
+    padding:20px 26px 80px;
+    display:grid;
+    grid-template-columns:230px 1fr 260px;
+    gap:22px;
+  }
+  @media (max-width:980px){
+    .layout{grid-template-columns:1fr; }
+  }
+
+  /* ---------- shared card ---------- */
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:16px 18px;
+  }
+  .card h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-style:italic;
+    font-size:16px;
+    margin:0 0 12px;
+    display:flex;align-items:center;gap:8px;
+    color:var(--sage-ink);
+  }
+  .sticker{font-size:15px;}
+
+  /* ---------- sidebar left ---------- */
+  .sidebar-left .card{margin-bottom:18px;}
+  .goal-list{list-style:none;margin:0;padding:0;font-size:14px;}
+  .goal-list li{
+    display:flex;align-items:flex-start;gap:8px;
+    padding:6px 0;
+    border-bottom:1px dashed var(--line);
+    color:var(--brown-soft);
+  }
+  .goal-list li:last-child{border-bottom:none;}
+  .check{
+    width:14px;height:14px;border:1.5px solid var(--sage-deep);border-radius:5px;
+    flex:none;margin-top:2px;
+  }
+  .nav-list{list-style:none;margin:0;padding:0;font-size:14px;}
+  .nav-list li{padding:7px 4px;border-radius:8px;cursor:pointer;transition:.15s;}
+  .nav-list li:hover{background:var(--blush);}
+  .nav-list li span.emoji{margin-right:8px;}
+
+  .routine-photo{
+    width:100%;height:110px;border-radius:12px;
+    background:linear-gradient(135deg,var(--blush),var(--sage));
+    margin-bottom:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:34px;
+  }
+  .routine{list-style:none;margin:0;padding:0;font-size:12.5px;color:var(--brown-soft);}
+  .routine li{display:flex;gap:8px;padding:4px 0;}
+  .routine time{font-family:'Space Mono',monospace;color:var(--sage-ink);width:56px;flex:none;font-size:11px;padding-top:1px;}
+
+  /* ---------- center ---------- */
+  .hero-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-bottom:20px;
+  }
+  .tile{
+    border-radius:14px;
+    height:110px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    display:flex;align-items:flex-end;
+    padding:10px;
+    font-size:12.5px;font-weight:600;color:#fff;
+    cursor:pointer;
+    transition:transform .2s ease;
+  }
+  .tile:hover{transform:translateY(-4px);}
+  .tile span{background:rgba(91,74,62,0.35);backdrop-filter:blur(2px);padding:3px 8px;border-radius:8px;}
+  .t1{background:linear-gradient(150deg,#f2c9d3,#e8aebd);}
+  .t2{background:linear-gradient(150deg,#cdd9bb,#a9bb92);}
+  .t3{background:linear-gradient(150deg,#e9d3ae,#d9a45c);}
+  .t4{background:linear-gradient(150deg,#c9d6e8,#a9c1d9);}
+
+  .planner{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:18px;
+  }
+  @media (max-width:700px){.planner{grid-template-columns:repeat(2,1fr);} .hero-grid{grid-template-columns:repeat(2,1fr);}}
+  .day-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:12px 12px 14px;
+    box-shadow:var(--shadow);
+  }
+  .day-card h4{
+    margin:0 0 8px;font-family:'Fraunces',serif;font-style:italic;font-weight:600;
+    font-size:14px;color:var(--sage-ink);
+    border-bottom:1px dashed var(--line);padding-bottom:6px;
+  }
+  .day-card ul{list-style:none;margin:0;padding:0;font-size:12.5px;color:var(--brown-soft);}
+  .day-card li{display:flex;gap:6px;align-items:flex-start;padding:3px 0;}
+  .weekly{grid-column:span 4;background:linear-gradient(150deg,#fff,#fbeff1);}
+  @media (max-width:700px){.weekly{grid-column:span 2;}}
+
+  .countdown-strip{
+    text-align:center;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:18px;
+  }
+  .countdown-strip .label{
+    font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:15px;color:var(--sage-ink);margin-bottom:12px;
+  }
+  .flip-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+  .flip{
+    background:var(--brown);
+    color:#fff9f2;
+    border-radius:10px;
+    padding:10px 14px;
+    min-width:56px;
+    font-family:'Space Mono',monospace;
+  }
+  .flip .num{font-size:22px;font-weight:700;display:block;}
+  .flip .unit{font-size:9px;letter-spacing:0.1em;opacity:0.7;text-transform:uppercase;}
+
+  /* ---------- right sidebar ---------- */
+  .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .cal-head .month{font-family:'Fraunces',serif;font-style:italic;font-weight:600;color:var(--sage-ink);font-size:15px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;font-size:10.5px;}
+  .cal-grid .dow{color:var(--brown-soft);font-weight:700;padding-bottom:4px;}
+  .cal-grid .day{padding:5px 0;border-radius:6px;color:var(--brown-soft);}
+  .cal-grid .day.today{background:var(--blush-deep);color:#fff;font-weight:700;}
+  .cal-grid .day.event::after{content:"";display:block;width:4px;height:4px;background:var(--sage-deep);border-radius:50%;margin:2px auto 0;}
+  .cal-grid .muted{opacity:0.3;}
+
+  .events-list{list-style:none;margin:0;padding:0;font-size:12.5px;}
+  .events-list li{display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);color:var(--brown-soft);}
+  .events-list li:last-child{border-bottom:none;}
+  .events-list .dot{width:6px;height:6px;border-radius:50%;background:var(--blush-deep);margin-top:5px;flex:none;}
+
+  .quote-card{
+    margin-top:18px;
+    background:linear-gradient(150deg,#f6dce0,#e9c3cf);
+    border-radius:16px;
+    padding:16px;
+    text-align:center;
+    box-shadow:var(--shadow);
+  }
+  .quote-card p{font-family:'Fraunces',serif;font-style:italic;font-size:13.5px;margin:0;color:var(--brown);}
+
+  footer{
+    text-align:center;
+    font-size:11px;
+    color:var(--brown-soft);
+    letter-spacing:0.08em;
+    padding-bottom:40px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="banner">
+    <div class="tape-r"></div>
+    <div class="mascot">🐢</div>
+    <div class="stitch">✿ ﹒ ﹒ keep this page cozy ﹒ ﹒ ✿</div>
+  </div>
+
+  <div class="titlewrap">
+    <h1>hi, honeydew 🍈</h1>
+    <p id="todayLine">loading today...</p>
+  </div>
+
+  <div class="layout">
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar-left">
+      <div class="card">
+        <h3><span class="sticker">🌿</span>goals for 2026</h3>
+        <ul class="goal-list">
+          <li><span class="check"></span>finish college applications</li>
+          <li><span class="check"></span>apply to scholarships</li>
+          <li><span class="check"></span>plan for freshman year</li>
+          <li><span class="check"></span>schedule senior photos 📷</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3><span class="sticker">🗂️</span>navigate</h3>
+        <ul class="nav-list">
+          <li><span class="emoji">📓</span>journal</li>
+          <li><span class="emoji">🎀</span>bucket list</li>
+          <li><span class="emoji">📚</span>reading list</li>
+          <li><span class="emoji">🎬</span>watchlist</li>
+          <li><span class="emoji">💌</span>letters to future me</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3><span class="sticker">☘︎</span>morning routine</h3>
+        <div class="routine-photo">🌸</div>
+        <ul class="routine">
+          <li><time>6:30am</time> wake up + skincare</li>
+          <li><time>7:00am</time> get ready + breakfast</li>
+          <li><time>7:45am</time> leave for school</li>
+          <li><time>4:00pm</time> home + snack</li>
+          <li><time>5:00pm</time> homework</li>
+          <li><time>9:00pm</time> bath + journal</li>
+          <li><time>10:30pm</time> wind down + sleep</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center">
+      <div class="hero-grid">
+        <div class="tile t1"><span>📝 today's entry</span></div>
+        <div class="tile t2"><span>🍓 mood tracker</span></div>
+        <div class="tile t3"><span>🎧 currently loving</span></div>
+        <div class="tile t4"><span>💭 gratitude list</span></div>
+      </div>
+
+      <div class="planner">
+        <div class="day-card"><h4>monday</h4><ul><li>☐ pick club roles</li><li>☐ read 20 pages</li></ul></div>
+        <div class="day-card"><h4>tuesday</h4><ul><li>☐ study session</li><li>☐ to-do</li></ul></div>
+        <div class="day-card"><h4>wednesday</h4><ul><li>☐ early day out!</li><li>☐ to-do</li></ul></div>
+        <div class="day-card"><h4>thursday</h4><ul><li>☐ to-do</li><li>☐ to-do</li></ul></div>
+
+        <div class="day-card weekly">
+          <h4>weekly reminders 🎗️</h4>
+          <ul>
+            <li>✿ drink water &amp; take vitamins</li>
+            <li>✿ water the plants</li>
+            <li>✿ 10 min stretch before bed</li>
+            <li>✿ write one nice thing that happened</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="countdown-strip">
+        <div class="label">days until graduation 🎓</div>
+        <div class="flip-row" id="countdown">
+          <div class="flip"><span class="num" id="cd-d">--</span><span class="unit">days</span></div>
+          <div class="flip"><span class="num" id="cd-h">--</span><span class="unit">hrs</span></div>
+          <div class="flip"><span class="num" id="cd-m">--</span><span class="unit">min</span></div>
+          <div class="flip"><span class="num" id="cd-s">--</span><span class="unit">sec</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="sidebar-right">
+      <div class="card">
+        <h3><span class="sticker">🗓️</span>calendar</h3>
+        <div class="cal-head"><span>‹</span><span class="month" id="calMonth">Month Year</span><span>›</span></div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3><span class="sticker">🎀</span>upcoming</h3>
+        <ul class="events-list" id="eventsList">
+          <li><span class="dot"></span>friend's birthday bbq</li>
+          <li><span class="dot"></span>club duty call</li>
+          <li><span class="dot"></span>AP practice test</li>
+        </ul>
+      </div>
+
+      <div class="quote-card">
+        <p>"soft days, sweet notes,<br>and a little bit of sparkle." ✨</p>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>made with 🍓 for slow mornings and softer thoughts</footer>
+
+<script>
+  // today line
+  const todayEl = document.getElementById('todayLine');
+  const now = new Date();
+  const opts = { weekday:'long', month:'long', day:'numeric', year:'numeric' };
+  todayEl.textContent = now.toLocaleDateString('en-US', opts);
+
+  // calendar
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const calMonth = document.getElementById('calMonth');
+  const calGrid = document.getElementById('calGrid');
+  const y = now.getFullYear(), m = now.getMonth();
+  calMonth.textContent = monthNames[m] + " " + y;
+
+  const dows = ["S","M","T","W","T","F","S"];
+  dows.forEach(d=>{
+    const el = document.createElement('div');
+    el.className='dow'; el.textContent=d;
+    calGrid.appendChild(el);
+  });
+
+  const firstDay = new Date(y,m,1).getDay();
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const eventDays = [20,24,29]; // sample sprinkle of dots
+  for(let i=0;i<firstDay;i++){
+    const el = document.createElement('div');
+    el.className='day muted';
+    calGrid.appendChild(el);
+  }
+  for(let d=1; d<=daysInMonth; d++){
+    const el = document.createElement('div');
+    el.className='day' + (d===now.getDate()?' today':'') + (eventDays.includes(d)?' event':'');
+    el.textContent = d;
+    calGrid.appendChild(el);
+  }
+
+  // countdown to graduation - editable target date
+  const target = new Date("2027-05-22T09:00:00");
+  function tick(){
+    const diff = target - new Date();
+    if(diff <= 0){ return; }
+    const d = Math.floor(diff/(1000*60*60*24));
+    const h = Math.floor((diff/(1000*60*60))%24);
+    const mi = Math.floor((diff/(1000*60))%60);
+    const s = Math.floor((diff/1000)%60);
+    document.getElementById('cd-d').textContent = d;
+    document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-m').textContent = String(mi).padStart(2,'0');
+    document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+  }
+  tick();
+  setInterval(tick, 1000);
+</script>
+
+</body>
+</html>
