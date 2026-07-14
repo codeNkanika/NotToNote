@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="view-transition" content="same-origin">
+<title>hi, honeydew 🍈 — notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Quicksand:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF6EF;
+    --paper:#FFFDFA;
+    --blush:#F6DCE0;
+    --blush-deep:#EBB8C4;
+    --sage:#C3D1AE;
+    --sage-deep:#8FA377;
+    --sage-ink:#5C6B4C;
+    --brown:#5B4A3E;
+    --brown-soft:#8A7A6C;
+    --gold:#E3A85C;
+    --line:#E7DCCB;
+    --shadow: 0 6px 18px rgba(91,74,62,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--cream);
+    background-image:
+      radial-gradient(circle at 8% 12%, rgba(195,209,174,0.25), transparent 40%),
+      radial-gradient(circle at 92% 30%, rgba(235,184,196,0.25), transparent 40%);
+    font-family:'Quicksand', sans-serif;
+    color:var(--brown);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--blush-deep);color:#fff;}
+
+  /* ---------- washi banner (matches home/diary) ---------- */
+  .banner{
+    position:relative;
+    height:150px;
+    overflow:hidden;
+    background:
+      repeating-linear-gradient(45deg, var(--sage) 0 18px, #BFCEA9 18px 19px),
+      linear-gradient(135deg, var(--sage) 0%, #cdd9bb 100%);
+    border-bottom:3px solid var(--paper);
+  }
+  .banner::before{
+    content:"";
+    position:absolute;inset:0;
+    background-image:
+      repeating-linear-gradient(45deg, transparent 0 26px, rgba(255,255,255,0.35) 26px 27px),
+      repeating-linear-gradient(-45deg, transparent 0 26px, rgba(255,255,255,0.2) 26px 27px);
+  }
+  .banner .tape-r{
+    position:absolute; right:6%; top:-10px; width:150px; height:170px;
+    background:repeating-linear-gradient(135deg, var(--gold) 0 12px, #cf9243 12px 24px);
+    opacity:0.9; transform:rotate(8deg);
+    box-shadow:var(--shadow);
+    border-radius:2px;
+  }
+  .banner .mascot{
+    position:absolute; left:6%; bottom:-6px; font-size:64px;
+    filter:drop-shadow(0 6px 6px rgba(0,0,0,0.12));
+    animation: bob 4.5s ease-in-out infinite;
+    view-transition-name: turtle;
+  }
+  @keyframes bob{ 0%,100%{transform:translateY(0) rotate(-2deg);} 50%{transform:translateY(-8px) rotate(2deg);} }
+
+  /* ---------- shared turtle transition (welcome -> notes) ---------- */
+  @view-transition{
+    navigation: auto;
+  }
+  ::view-transition-group(turtle){
+    animation-duration: 0.7s;
+    animation-timing-function: cubic-bezier(.4,0,.2,1);
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root){
+    animation-duration: 0.45s;
+  }
+  .mascot.just-landed{
+    animation: land 0.5s ease-out;
+  }
+  @keyframes land{
+    0%{ transform: scale(1.15) rotate(-4deg); }
+    60%{ transform: scale(0.95) rotate(3deg); }
+    100%{ transform: scale(1) rotate(0deg); }
+  }
+  .banner .stitch{
+    position:absolute; left:0; right:0; bottom:8px;
+    text-align:center;
+    letter-spacing:0.4em;
+    font-size:10px;
+    color:rgba(91,74,62,0.35);
+    font-family:'Space Mono', monospace;
+  }
+  .back-link{
+    position:absolute; left:16px; top:14px;
+    font-size:12px;
+    font-family:'Space Mono', monospace;
+    color:var(--brown);
+    background:var(--paper);
+    border:1px solid var(--line);
+    padding:6px 12px;
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    z-index:5;
+  }
+  .back-link:hover{ background:var(--blush); }
+
+  /* ---------- title ---------- */
+  .titlewrap{
+    max-width:760px;
+    margin:0 auto;
+    padding:28px 26px 6px;
+    text-align:center;
+  }
+  .titlewrap h1{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:36px;
+    margin:0 0 6px;
+  }
+  .titlewrap p{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color:var(--sage-ink);
+    margin:0;
+  }
+
+  /* ---------- notes board ---------- */
+  .board-wrap{
+    max-width:900px;
+    margin:26px auto 0;
+    padding:0 26px;
+  }
+  .add-note{
+    display:flex;
+    gap:10px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:14px;
+    margin-bottom:24px;
+  }
+  .add-note input[type=text]{
+    flex:1;
+    border:none;
+    background:transparent;
+    font-family:'Quicksand', sans-serif;
+    font-size:14px;
+    color:var(--brown);
+    outline:none;
+    padding:6px 4px;
+  }
+  .add-note input[type=text]::placeholder{ color:var(--brown-soft); }
+  .add-note select{
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:var(--cream);
+    font-family:'Quicksand', sans-serif;
+    font-size:12.5px;
+    color:var(--brown);
+    padding:6px 8px;
+  }
+  .add-note button{
+    background:var(--brown);
+    color:#fff9f2;
+    border:none;
+    border-radius:12px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    padding:8px 18px;
+    cursor:pointer;
+    transition:background .2s ease;
+  }
+  .add-note button:hover{ background:#4a3c32; }
+
+  .notes-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));
+    gap:16px;
+    padding-bottom:20px;
+  }
+  .sticky{
+    position:relative;
+    border-radius:14px;
+    padding:18px 16px 34px;
+    min-height:120px;
+    box-shadow:var(--shadow);
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:14.5px;
+    line-height:1.5;
+    color:var(--brown);
+    transform:rotate(var(--tilt, -1deg));
+    word-wrap:break-word;
+  }
+  .sticky.blush{ background:var(--blush); }
+  .sticky.sage{ background:var(--sage); }
+  .sticky.gold{ background:#F3D9AE; }
+  .sticky.cream{ background:#fff; border:1px solid var(--line); }
+  .sticky .del{
+    position:absolute;
+    bottom:10px; right:12px;
+    font-family:'Quicksand', sans-serif;
+    font-style:normal;
+    font-size:11px;
+    color:var(--brown-soft);
+    background:rgba(255,255,255,0.6);
+    border:none;
+    border-radius:10px;
+    padding:3px 9px;
+    cursor:pointer;
+  }
+  .sticky .del:hover{ color:var(--brown); }
+
+  .empty-state{
+    text-align:center;
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    color:var(--brown-soft);
+    font-size:14px;
+    padding:30px 10px;
+  }
+
+  footer{
+    text-align:center;
+    font-size:11px;
+    color:var(--brown-soft);
+    letter-spacing:0.08em;
+    padding:36px 0 44px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="banner">
+    <a class="back-link" href="index.html">← back</a>
+    <div class="tape-r"></div>
+    <div class="mascot" id="theTurtle">🐢</div>
+    <div class="stitch">✿ ﹒ ﹒ jot it down before it floats away ﹒ ﹒ ✿</div>
+  </div>
+
+  <div class="titlewrap">
+    <h1>notes 🗒️</h1>
+    <p id="todayLine">loading today...</p>
+  </div>
+
+  <div class="board-wrap">
+    <div class="add-note">
+      <input type="text" id="noteInput" placeholder="write a quick note..." maxlength="220">
+      <select id="noteColor">
+        <option value="blush">blush</option>
+        <option value="sage">sage</option>
+        <option value="gold">gold</option>
+        <option value="cream">plain</option>
+      </select>
+      <button id="addNoteBtn">add</button>
+    </div>
+
+    <div class="notes-grid" id="notesGrid"></div>
+    <p class="empty-state" id="emptyState" style="display:none;">no notes yet — jot something down above 🌿</p>
+  </div>
+
+  <footer>made with 🍓 for slow mornings and softer thoughts</footer>
+
+<script>
+  // give the turtle a tiny settle-bounce once it lands here
+  const landedTurtle = document.getElementById('theTurtle');
+  if (landedTurtle) {
+    requestAnimationFrame(() => {
+      landedTurtle.classList.add('just-landed');
+      setTimeout(() => landedTurtle.classList.remove('just-landed'), 600);
+    });
+  }
+
+  // today line
+  const todayEl = document.getElementById('todayLine');
+  const now = new Date();
+  const opts = { weekday:'long', month:'long', day:'numeric', year:'numeric' };
+  todayEl.textContent = now.toLocaleDateString('en-US', opts);
+
+  // ---- simple sticky notes, saved in this browser via localStorage ----
+  const STORAGE_KEY = 'honeydew_notes';
+  const grid = document.getElementById('notesGrid');
+  const emptyState = document.getElementById('emptyState');
+  const input = document.getElementById('noteInput');
+  const colorSelect = document.getElementById('noteColor');
+  const addBtn = document.getElementById('addNoteBtn');
+
+  function loadNotes(){
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch(e){
+      return [];
+    }
+  }
+  function saveNotes(notes){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+  }
+
+  function render(){
+    const notes = loadNotes();
+    grid.innerHTML = '';
+    emptyState.style.display = notes.length ? 'none' : 'block';
+    notes.forEach((note, i) => {
+      const card = document.createElement('div');
+      card.className = 'sticky ' + note.color;
+      card.style.setProperty('--tilt', (i % 2 === 0 ? '-1.5deg' : '1.2deg'));
+      card.textContent = note.text;
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = 'remove';
+      del.addEventListener('click', () => {
+        const updated = loadNotes();
+        updated.splice(i, 1);
+        saveNotes(updated);
+        render();
+      });
+      card.appendChild(del);
+      grid.appendChild(card);
+    });
+  }
+
+  function addNote(){
+    const text = input.value.trim();
+    if (!text) return;
+    const notes = loadNotes();
+    notes.unshift({ text, color: colorSelect.value });
+    saveNotes(notes);
+    input.value = '';
+    render();
+  }
+
+  addBtn.addEventListener('click', addNote);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addNote();
+  });
+
+  render();
+</script>
+
+</body>
+</html>
