@@ -115,7 +115,7 @@
   .titlewrap{
     max-width:760px;
     margin:0 auto;
-    padding:28px 26px 6px;
+    padding:28px 26px 4px;
     text-align:center;
   }
   .titlewrap h1{
@@ -132,12 +132,42 @@
     margin:0;
   }
 
-  /* ---------- notes board ---------- */
+  /* ---------- tabs ---------- */
+  .tab-switch{
+    max-width:900px;
+    margin:22px auto 0;
+    padding:0 26px;
+    display:flex;
+    gap:10px;
+    justify-content:center;
+  }
+  .tab-btn{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:9px 20px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--brown-soft);
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transition:all .2s ease;
+  }
+  .tab-btn:hover{ transform:translateY(-2px); }
+  .tab-btn.active{
+    background:var(--brown);
+    color:#fff9f2;
+    border-color:var(--brown);
+  }
+
   .board-wrap{
     max-width:900px;
     margin:26px auto 0;
     padding:0 26px;
   }
+
+  /* ---------- quick notes ---------- */
   .add-note{
     display:flex;
     gap:10px;
@@ -230,6 +260,284 @@
     padding:30px 10px;
   }
 
+  /* ---------- notebooks grid ---------- */
+  .notebooks-toolbar{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:18px;
+  }
+  .add-notebook-btn{
+    background:var(--brown);
+    color:#fff9f2;
+    border:none;
+    border-radius:20px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    padding:10px 20px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transition:background .2s ease, transform .2s ease;
+  }
+  .add-notebook-btn:hover{ background:#4a3c32; transform:translateY(-2px); }
+
+  .notebooks-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));
+    gap:20px;
+    padding-bottom:20px;
+  }
+  .notebook-card{
+    position:relative;
+    aspect-ratio:3/4;
+    border-radius:14px;
+    background-size:cover;
+    background-position:center;
+    box-shadow:0 10px 22px rgba(91,74,62,0.18);
+    cursor:pointer;
+    overflow:hidden;
+    transition:transform .2s ease;
+    border:1px solid var(--line);
+  }
+  .notebook-card:hover{ transform:translateY(-5px) rotate(-1deg); }
+  .notebook-card.cover-blush{ background:linear-gradient(160deg,var(--blush),var(--blush-deep)); }
+  .notebook-card.cover-sage{ background:linear-gradient(160deg,var(--sage),var(--sage-deep)); }
+  .notebook-card.cover-gold{ background:linear-gradient(160deg,#F3D9AE,var(--gold)); }
+  .notebook-card.cover-cream{ background:linear-gradient(160deg,#fff,var(--cream)); }
+  .notebook-icon{
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    font-size:34px;
+    opacity:0.55;
+  }
+  .notebook-scrim{
+    position:absolute; left:0; right:0; bottom:0;
+    background:linear-gradient(to top, rgba(40,30,22,0.75), transparent);
+    padding:26px 12px 10px;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .notebook-title{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:14px;
+    color:#fff;
+    line-height:1.25;
+  }
+  .notebook-count{
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    color:rgba(255,255,255,0.8);
+  }
+
+  /* ---------- notebook detail ---------- */
+  .back-to-notebooks{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:7px 16px;
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    color:var(--brown);
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    margin-bottom:16px;
+  }
+  .back-to-notebooks:hover{ background:var(--blush); }
+
+  .notebook-header{
+    border-radius:18px;
+    min-height:130px;
+    background-size:cover;
+    background-position:center;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    margin-bottom:20px;
+  }
+  .notebook-header.cover-blush{ background:linear-gradient(160deg,var(--blush),var(--blush-deep)); }
+  .notebook-header.cover-sage{ background:linear-gradient(160deg,var(--sage),var(--sage-deep)); }
+  .notebook-header.cover-gold{ background:linear-gradient(160deg,#F3D9AE,var(--gold)); }
+  .notebook-header.cover-cream{ background:linear-gradient(160deg,#fff,var(--cream)); }
+  .notebook-header-scrim{
+    background:linear-gradient(to top, rgba(40,30,22,0.7), transparent 70%);
+    min-height:130px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    padding:18px 20px;
+    gap:8px;
+  }
+  .notebook-header-scrim h2{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:24px;
+    color:#fff;
+    margin:0;
+  }
+  .delete-notebook-btn{
+    align-self:flex-start;
+    background:rgba(255,255,255,0.85);
+    border:none;
+    border-radius:14px;
+    font-family:'Quicksand', sans-serif;
+    font-size:11px;
+    font-weight:700;
+    color:var(--brown);
+    padding:5px 12px;
+    cursor:pointer;
+  }
+  .delete-notebook-btn:hover{ background:#fff; }
+
+  .pages-list{ display:flex; flex-direction:column; gap:10px; padding-bottom:20px; }
+  .page-row{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    box-shadow:var(--shadow);
+  }
+  .page-date{
+    font-family:'Space Mono', monospace;
+    font-size:10.5px;
+    color:var(--sage-ink);
+    flex-shrink:0;
+  }
+  .page-text{
+    flex:1;
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:14px;
+    color:var(--brown);
+  }
+  .page-row .del{
+    background:none;
+    border:none;
+    font-family:'Quicksand', sans-serif;
+    font-size:11px;
+    color:var(--brown-soft);
+    cursor:pointer;
+  }
+  .page-row .del:hover{ color:var(--brown); }
+
+  /* ---------- new notebook modal ---------- */
+  .nb-overlay{
+    position:fixed; inset:0;
+    background:rgba(91,74,62,0.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:1000;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s ease;
+  }
+  .nb-overlay.open{ opacity:1; pointer-events:auto; }
+  .nb-card{
+    position:relative;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:22px;
+    box-shadow:0 20px 50px rgba(91,74,62,0.25);
+    padding:32px 28px 26px;
+    max-width:360px;
+    width:100%;
+    transform:translateY(14px) scale(0.96);
+    transition:transform .3s ease;
+    max-height:88vh;
+    overflow-y:auto;
+  }
+  .nb-overlay.open .nb-card{ transform:translateY(0) scale(1); }
+  .nb-card h3{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:22px;
+    margin:0 0 4px;
+    text-align:center;
+  }
+  .nb-card > p{
+    font-size:12px;
+    color:var(--brown-soft);
+    text-align:center;
+    margin:0 0 18px;
+  }
+  .nb-card input[type=text]{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:var(--cream);
+    font-family:'Quicksand', sans-serif;
+    font-size:14px;
+    padding:10px 12px;
+    margin-bottom:14px;
+    outline:none;
+  }
+  .cover-preview{
+    width:100%;
+    height:130px;
+    border-radius:14px;
+    border:2px dashed var(--line);
+    background-size:cover;
+    background-position:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Quicksand', sans-serif;
+    font-size:12.5px;
+    color:var(--brown-soft);
+    cursor:pointer;
+    transition:border-color .2s ease;
+    text-align:center;
+    padding:10px;
+    margin-bottom:10px;
+  }
+  .cover-preview:hover{ border-color:var(--sage-deep); }
+  .cover-hint{
+    font-size:11px;
+    color:var(--brown-soft);
+    text-align:center;
+    margin:10px 0 8px;
+  }
+  .color-swatches{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .swatch{
+    width:26px; height:26px;
+    border-radius:50%;
+    border:2px solid transparent;
+    cursor:pointer;
+    padding:0;
+  }
+  .swatch.blush{ background:var(--blush-deep); }
+  .swatch.sage{ background:var(--sage-deep); }
+  .swatch.gold{ background:var(--gold); }
+  .swatch.cream{ background:#fff; border-color:var(--line); }
+  .swatch.active{ border-color:var(--brown); }
+  .create-btn{
+    width:100%;
+    background:var(--brown);
+    color:#fff9f2;
+    border:none;
+    border-radius:14px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    padding:12px;
+    cursor:pointer;
+    transition:background .2s ease;
+  }
+  .create-btn:hover{ background:#4a3c32; }
+
   footer{
     text-align:center;
     font-size:11px;
@@ -253,7 +561,13 @@
     <p id="todayLine">loading today...</p>
   </div>
 
-  <div class="board-wrap">
+  <div class="tab-switch">
+    <button class="tab-btn active" id="tabQuickBtn">🎀 quick notes</button>
+    <button class="tab-btn" id="tabNotebookBtn">📔 notebooks</button>
+  </div>
+
+  <!-- quick notes -->
+  <div class="board-wrap" id="panelQuick">
     <div class="add-note">
       <input type="text" id="noteInput" placeholder="write a quick note..." maxlength="220">
       <select id="noteColor">
@@ -264,15 +578,68 @@
       </select>
       <button id="addNoteBtn">add</button>
     </div>
-
     <div class="notes-grid" id="notesGrid"></div>
     <p class="empty-state" id="emptyState" style="display:none;">no notes yet — jot something down above 🌿</p>
   </div>
 
+  <!-- notebooks grid -->
+  <div class="board-wrap" id="panelNotebook" style="display:none;">
+    <div class="notebooks-toolbar">
+      <button class="add-notebook-btn" id="newNotebookBtn">+ new notebook</button>
+    </div>
+    <div class="notebooks-grid" id="notebooksGrid"></div>
+    <p class="empty-state" id="notebooksEmpty" style="display:none;">no notebooks yet — start one for work, school, or whatever needs its own cover 📔</p>
+  </div>
+
+  <!-- notebook detail -->
+  <div class="board-wrap" id="panelNotebookDetail" style="display:none;">
+    <button class="back-to-notebooks" id="backToNotebooks">← all notebooks</button>
+    <div class="notebook-header" id="notebookDetailHeader"></div>
+    <div class="add-note">
+      <input type="text" id="pageInput" placeholder="add a page / entry...">
+      <button id="addPageBtn">add</button>
+    </div>
+    <div class="pages-list" id="pagesList"></div>
+  </div>
+
   <footer>made with 🍓 for slow mornings and softer thoughts</footer>
 
+  <!-- new notebook modal -->
+  <div class="nb-overlay" id="nbOverlay">
+    <div class="nb-card">
+      <h3>new notebook</h3>
+      <p>give it a title and, if you like, a cover photo</p>
+      <input type="text" id="nbTitleInput" placeholder="notebook title" maxlength="60">
+      <div class="cover-preview" id="coverPreview">＋ add cover photo</div>
+      <input type="file" id="coverFile" accept="image/*" hidden>
+      <p class="cover-hint">or pick a color instead:</p>
+      <div class="color-swatches" id="colorSwatches">
+        <button type="button" class="swatch blush active" data-color="blush"></button>
+        <button type="button" class="swatch sage" data-color="sage"></button>
+        <button type="button" class="swatch gold" data-color="gold"></button>
+        <button type="button" class="swatch cream" data-color="cream"></button>
+      </div>
+      <button class="create-btn" id="createNotebookBtn">create notebook</button>
+    </div>
+  </div>
+
 <script>
-  // give the turtle a tiny settle-bounce once it lands here
+  function resetLandedState(){
+    const t = document.getElementById('theTurtle');
+    if (t) t.classList.remove('just-landed');
+  }
+  resetLandedState();
+  window.addEventListener('pageshow', function(){
+    resetLandedState();
+    const t = document.getElementById('theTurtle');
+    if (t) {
+      requestAnimationFrame(() => {
+        t.classList.add('just-landed');
+        setTimeout(() => t.classList.remove('just-landed'), 600);
+      });
+    }
+  });
+
   const landedTurtle = document.getElementById('theTurtle');
   if (landedTurtle) {
     requestAnimationFrame(() => {
@@ -287,7 +654,32 @@
   const opts = { weekday:'long', month:'long', day:'numeric', year:'numeric' };
   todayEl.textContent = now.toLocaleDateString('en-US', opts);
 
-  // ---- simple sticky notes, saved in this browser via localStorage ----
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ---- tabs ----
+  const tabQuickBtn = document.getElementById('tabQuickBtn');
+  const tabNotebookBtn = document.getElementById('tabNotebookBtn');
+  const panelQuick = document.getElementById('panelQuick');
+  const panelNotebook = document.getElementById('panelNotebook');
+  const panelNotebookDetail = document.getElementById('panelNotebookDetail');
+
+  function switchTab(tab){
+    const quick = tab === 'quick';
+    tabQuickBtn.classList.toggle('active', quick);
+    tabNotebookBtn.classList.toggle('active', !quick);
+    panelQuick.style.display = quick ? 'block' : 'none';
+    panelNotebookDetail.style.display = 'none';
+    panelNotebook.style.display = quick ? 'none' : 'block';
+    if (!quick) renderNotebooks();
+  }
+  tabQuickBtn.addEventListener('click', () => switchTab('quick'));
+  tabNotebookBtn.addEventListener('click', () => switchTab('notebook'));
+
+  // ---- quick notes (saved in this browser via localStorage) ----
   const STORAGE_KEY = 'honeydew_notes';
   const grid = document.getElementById('notesGrid');
   const emptyState = document.getElementById('emptyState');
@@ -296,17 +688,12 @@
   const addBtn = document.getElementById('addNoteBtn');
 
   function loadNotes(){
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch(e){
-      return [];
-    }
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch(e){ return []; }
   }
-  function saveNotes(notes){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-  }
+  function saveNotes(notes){ localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); }
 
-  function render(){
+  function renderNotes(){
     const notes = loadNotes();
     grid.innerHTML = '';
     emptyState.style.display = notes.length ? 'none' : 'block';
@@ -322,13 +709,12 @@
         const updated = loadNotes();
         updated.splice(i, 1);
         saveNotes(updated);
-        render();
+        renderNotes();
       });
       card.appendChild(del);
       grid.appendChild(card);
     });
   }
-
   function addNote(){
     const text = input.value.trim();
     if (!text) return;
@@ -336,15 +722,215 @@
     notes.unshift({ text, color: colorSelect.value });
     saveNotes(notes);
     input.value = '';
-    render();
+    renderNotes();
+  }
+  addBtn.addEventListener('click', addNote);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') addNote(); });
+  renderNotes();
+
+  // ---- notebooks (saved in this browser via localStorage) ----
+  const NB_KEY = 'honeydew_notebooks';
+  const notebooksGrid = document.getElementById('notebooksGrid');
+  const notebooksEmpty = document.getElementById('notebooksEmpty');
+  const notebookDetailHeader = document.getElementById('notebookDetailHeader');
+  const pagesList = document.getElementById('pagesList');
+  const pageInput = document.getElementById('pageInput');
+  const addPageBtn = document.getElementById('addPageBtn');
+  const backToNotebooksBtn = document.getElementById('backToNotebooks');
+  const newNotebookBtn = document.getElementById('newNotebookBtn');
+  const nbOverlay = document.getElementById('nbOverlay');
+  const nbTitleInput = document.getElementById('nbTitleInput');
+  const coverPreview = document.getElementById('coverPreview');
+  const coverFile = document.getElementById('coverFile');
+  const colorSwatches = document.querySelectorAll('#colorSwatches .swatch');
+  const createNotebookBtn = document.getElementById('createNotebookBtn');
+
+  let currentNotebookIndex = null;
+  let pendingCover = null;
+  let pendingColor = 'blush';
+
+  function loadNotebooks(){
+    try { return JSON.parse(localStorage.getItem(NB_KEY)) || []; }
+    catch(e){ return []; }
+  }
+  function saveNotebooks(nb){ localStorage.setItem(NB_KEY, JSON.stringify(nb)); }
+
+  function renderNotebooks(){
+    const notebooks = loadNotebooks();
+    notebooksGrid.innerHTML = '';
+    notebooksEmpty.style.display = notebooks.length ? 'none' : 'block';
+    notebooks.forEach((nb, i) => {
+      const card = document.createElement('div');
+      card.className = 'notebook-card' + (nb.cover ? '' : ' cover-' + nb.color);
+      if (nb.cover) card.style.backgroundImage = `url(${nb.cover})`;
+      const iconHtml = nb.cover ? '' : '<span class="notebook-icon">📔</span>';
+      card.innerHTML = `
+        ${iconHtml}
+        <div class="notebook-scrim">
+          <span class="notebook-title">${escapeHtml(nb.title)}</span>
+          <span class="notebook-count">${nb.pages.length} page${nb.pages.length === 1 ? '' : 's'}</span>
+        </div>
+      `;
+      card.addEventListener('click', () => openNotebook(i));
+      notebooksGrid.appendChild(card);
+    });
   }
 
-  addBtn.addEventListener('click', addNote);
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') addNote();
+  function openNotebook(i){
+    currentNotebookIndex = i;
+    panelNotebook.style.display = 'none';
+    panelNotebookDetail.style.display = 'block';
+    renderNotebookDetail();
+  }
+
+  function backToNotebooksList(){
+    currentNotebookIndex = null;
+    panelNotebookDetail.style.display = 'none';
+    panelNotebook.style.display = 'block';
+    renderNotebooks();
+  }
+  backToNotebooksBtn.addEventListener('click', backToNotebooksList);
+
+  function renderNotebookDetail(){
+    const notebooks = loadNotebooks();
+    const nb = notebooks[currentNotebookIndex];
+    if (!nb) { backToNotebooksList(); return; }
+
+    notebookDetailHeader.className = 'notebook-header' + (nb.cover ? '' : ' cover-' + nb.color);
+    notebookDetailHeader.style.backgroundImage = nb.cover ? `url(${nb.cover})` : '';
+    notebookDetailHeader.innerHTML = `
+      <div class="notebook-header-scrim">
+        <h2>${escapeHtml(nb.title)}</h2>
+        <button class="delete-notebook-btn" id="deleteNotebookBtn">delete notebook</button>
+      </div>
+    `;
+    document.getElementById('deleteNotebookBtn').addEventListener('click', () => {
+      if (confirm('delete this notebook and all its pages?')) {
+        const all = loadNotebooks();
+        all.splice(currentNotebookIndex, 1);
+        saveNotebooks(all);
+        backToNotebooksList();
+      }
+    });
+
+    pagesList.innerHTML = '';
+    if (!nb.pages.length) {
+      pagesList.innerHTML = '<p class="empty-state">no pages yet — add the first entry above ✎</p>';
+    }
+    nb.pages.forEach((page, pi) => {
+      const row = document.createElement('div');
+      row.className = 'page-row';
+      const dateSpan = document.createElement('span');
+      dateSpan.className = 'page-date';
+      dateSpan.textContent = page.date;
+      const textSpan = document.createElement('span');
+      textSpan.className = 'page-text';
+      textSpan.textContent = page.text;
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = 'remove';
+      del.addEventListener('click', () => {
+        const all = loadNotebooks();
+        all[currentNotebookIndex].pages.splice(pi, 1);
+        saveNotebooks(all);
+        renderNotebookDetail();
+      });
+      row.appendChild(dateSpan);
+      row.appendChild(textSpan);
+      row.appendChild(del);
+      pagesList.appendChild(row);
+    });
+  }
+
+  function addPage(){
+    const text = pageInput.value.trim();
+    if (!text || currentNotebookIndex === null) return;
+    const all = loadNotebooks();
+    const dateStr = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    all[currentNotebookIndex].pages.unshift({ text, date: dateStr });
+    saveNotebooks(all);
+    pageInput.value = '';
+    renderNotebookDetail();
+  }
+  addPageBtn.addEventListener('click', addPage);
+  pageInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addPage(); });
+
+  // ---- new notebook modal ----
+  function openNbModal(){
+    nbTitleInput.value = '';
+    pendingCover = null;
+    pendingColor = 'blush';
+    coverPreview.style.backgroundImage = '';
+    coverPreview.textContent = '＋ add cover photo';
+    colorSwatches.forEach(s => s.classList.toggle('active', s.dataset.color === 'blush'));
+    nbOverlay.classList.add('open');
+    setTimeout(() => nbTitleInput.focus(), 100);
+  }
+  function closeNbModal(){ nbOverlay.classList.remove('open'); }
+
+  newNotebookBtn.addEventListener('click', openNbModal);
+  nbOverlay.addEventListener('click', (e) => { if (e.target === nbOverlay) closeNbModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNbModal(); });
+
+  coverPreview.addEventListener('click', () => coverFile.click());
+
+  function readAndResizeImage(file, maxDim){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+          else if (h >= w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  coverFile.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      pendingCover = await readAndResizeImage(file, 640);
+      coverPreview.style.backgroundImage = `url(${pendingCover})`;
+      coverPreview.textContent = '';
+    } catch (err) {
+      alert('could not read that image — try a different one');
+    }
   });
 
-  render();
+  colorSwatches.forEach(s => {
+    s.addEventListener('click', () => {
+      pendingColor = s.dataset.color;
+      colorSwatches.forEach(x => x.classList.remove('active'));
+      s.classList.add('active');
+    });
+  });
+
+  createNotebookBtn.addEventListener('click', () => {
+    const title = nbTitleInput.value.trim();
+    if (!title) { nbTitleInput.focus(); return; }
+    const notebooks = loadNotebooks();
+    notebooks.unshift({ title, cover: pendingCover, color: pendingColor, pages: [] });
+    try {
+      saveNotebooks(notebooks);
+    } catch (err) {
+      alert("that cover image was too big to save — try a smaller photo");
+      return;
+    }
+    closeNbModal();
+    renderNotebooks();
+  });
 </script>
 
 </body>
