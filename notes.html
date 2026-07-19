@@ -299,8 +299,10 @@
   .notebook-card:hover{ transform:translateY(-5px); }
   .notebook-cover{
     position:relative;
-    aspect-ratio:4/3;
-    background-size:cover;
+    aspect-ratio:210/297;
+    background-color:var(--cream);
+    background-size:contain;
+    background-repeat:no-repeat;
     background-position:center;
   }
   .notebook-cover.cover-blush{ background:linear-gradient(160deg,var(--blush),var(--blush-deep)); }
@@ -358,8 +360,10 @@
   }
   .notebook-cover-detail{
     position:relative;
-    height:170px;
-    background-size:cover;
+    height:320px;
+    background-color:var(--cream);
+    background-size:contain;
+    background-repeat:no-repeat;
     background-position:center;
   }
   .notebook-cover-detail.cover-blush{ background:linear-gradient(160deg,var(--blush),var(--blush-deep)); }
@@ -558,10 +562,12 @@
   }
   .cover-preview{
     width:100%;
-    height:130px;
+    height:150px;
     border-radius:14px;
     border:2px dashed var(--line);
-    background-size:cover;
+    background-color:var(--cream);
+    background-size:contain;
+    background-repeat:no-repeat;
     background-position:center;
     display:flex;
     align-items:center;
@@ -1224,7 +1230,7 @@
     const file = e.target.files[0];
     if (!file) return;
     try {
-      pendingCover = await readAndResizeImage(file, 640);
+      pendingCover = await readAndResizeImage(file, 1000);
       coverPreview.style.backgroundImage = `url(${pendingCover})`;
       coverPreview.textContent = '';
     } catch (err) {
