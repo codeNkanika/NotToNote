@@ -382,6 +382,24 @@
     color:var(--brown);
     margin:0;
   }
+  .notebook-header-actions{
+    display:flex;
+    gap:8px;
+    flex-shrink:0;
+  }
+  .read-notebook-btn{
+    flex-shrink:0;
+    background:var(--brown);
+    border:1px solid var(--brown);
+    border-radius:14px;
+    font-family:'Quicksand', sans-serif;
+    font-size:11px;
+    font-weight:700;
+    color:#fff9f2;
+    padding:5px 13px;
+    cursor:pointer;
+  }
+  .read-notebook-btn:hover{ background:#4a3c32; }
   .delete-notebook-btn{
     flex-shrink:0;
     background:var(--cream);
@@ -597,6 +615,102 @@
   }
   .create-btn:hover{ background:#4a3c32; }
 
+  /* ---------- book reader ---------- */
+  .reader-overlay{
+    position:fixed; inset:0;
+    background:rgba(40,30,22,0.78);
+    z-index:1200;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:26px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s ease;
+  }
+  .reader-overlay.open{ opacity:1; pointer-events:auto; }
+  .reader-close{
+    position:absolute; top:20px; right:24px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:8px 16px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    color:var(--brown);
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    z-index:5;
+  }
+  .reader-close:hover{ background:var(--blush); }
+  .reader-book{
+    display:flex;
+    width:100%;
+    max-width:1100px;
+    height:82vh;
+    max-height:760px;
+    box-shadow:0 30px 70px rgba(0,0,0,0.4);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .reader-page{
+    flex:1;
+    position:relative;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 27px,
+        var(--line) 27px,
+        var(--line) 28px
+      ),
+      var(--paper);
+    padding:40px 34px 30px;
+    cursor:pointer;
+    transition:background-color .15s ease;
+  }
+  .reader-page:hover{ background-color:#fffaf3; }
+  .reader-page.empty{ cursor:default; background-color:var(--cream); }
+  .reader-page.empty:hover{ background-color:var(--cream); }
+  .reader-page-left{ box-shadow: inset -16px 0 26px -20px rgba(0,0,0,0.4); }
+  .reader-page-right{ box-shadow: inset 16px 0 26px -20px rgba(0,0,0,0.4); }
+  .reader-spine{
+    width:14px;
+    flex-shrink:0;
+    background:linear-gradient(to right, rgba(0,0,0,0.14), rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.14));
+  }
+  .reader-page-inner{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:14.5px;
+    line-height:28px;
+    color:var(--brown);
+    white-space:pre-wrap;
+    word-wrap:break-word;
+    height:100%;
+    overflow-y:auto;
+  }
+  .reader-page-inner:empty::before{
+    content:attr(data-placeholder);
+    color:var(--brown-soft);
+    opacity:0.55;
+  }
+  .reader-page-num{
+    position:absolute;
+    bottom:12px;
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    color:var(--brown-soft);
+  }
+  .reader-page-left .reader-page-num{ left:20px; }
+  .reader-page-right .reader-page-num{ right:20px; }
+  @media (max-width:760px){
+    .reader-book{ flex-direction:column; height:auto; max-height:none; width:92%; }
+    .reader-spine{ width:auto; height:10px; background:linear-gradient(to bottom, rgba(0,0,0,0.14), rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.14)); }
+    .reader-page{ min-height:280px; }
+  }
+
   footer{
     text-align:center;
     font-size:11px;
@@ -678,6 +792,22 @@
         <button type="button" class="swatch cream" data-color="cream"></button>
       </div>
       <button class="create-btn" id="createNotebookBtn">create notebook</button>
+    </div>
+  </div>
+
+  <!-- book reader -->
+  <div class="reader-overlay" id="readerOverlay">
+    <button class="reader-close" id="readerClose">✕ close</button>
+    <div class="reader-book">
+      <div class="reader-page reader-page-left" id="readerLeftPage">
+        <div class="reader-page-inner" id="readerLeftContent" data-placeholder="(blank page)"></div>
+        <span class="reader-page-num" id="readerLeftNum"></span>
+      </div>
+      <div class="reader-spine"></div>
+      <div class="reader-page reader-page-right" id="readerRightPage">
+        <div class="reader-page-inner" id="readerRightContent" data-placeholder="(blank page)"></div>
+        <span class="reader-page-num" id="readerRightNum"></span>
+      </div>
     </div>
   </div>
 
@@ -885,9 +1015,13 @@
       ${coverHtml}
       <div class="notebook-caption-detail">
         <h2>${escapeHtml(nb.title)}</h2>
-        <button class="delete-notebook-btn" id="deleteNotebookBtn">delete notebook</button>
+        <div class="notebook-header-actions">
+          <button class="read-notebook-btn" id="readNotebookBtn">📖 read</button>
+          <button class="delete-notebook-btn" id="deleteNotebookBtn">delete notebook</button>
+        </div>
       </div>
     `;
+    document.getElementById('readNotebookBtn').addEventListener('click', openReader);
     document.getElementById('deleteNotebookBtn').addEventListener('click', () => {
       if (confirm('delete this notebook and all its pages?')) {
         const all = loadNotebooks();
@@ -964,6 +1098,84 @@
         if (ta) ta.focus();
       }
     });
+  });
+
+  // ---- book reader (two-page open-book view) ----
+  const readerOverlay = document.getElementById('readerOverlay');
+  const readerClose = document.getElementById('readerClose');
+  const readerLeftPage = document.getElementById('readerLeftPage');
+  const readerRightPage = document.getElementById('readerRightPage');
+  const readerLeftContent = document.getElementById('readerLeftContent');
+  const readerRightContent = document.getElementById('readerRightContent');
+  const readerLeftNum = document.getElementById('readerLeftNum');
+  const readerRightNum = document.getElementById('readerRightNum');
+
+  let readerSpreadStart = 0; // index of the page shown on the left sheet
+
+  function openReader(){
+    flushAllPages();
+    readerSpreadStart = 0;
+    renderReaderSpread();
+    readerOverlay.classList.add('open');
+  }
+  function closeReader(){
+    readerOverlay.classList.remove('open');
+  }
+
+  function renderReaderSpread(){
+    const notebooks = loadNotebooks();
+    const nb = notebooks[currentNotebookIndex];
+    if (!nb) return;
+    const leftIdx = readerSpreadStart;
+    const rightIdx = readerSpreadStart + 1;
+    const leftPage = nb.pages[leftIdx];
+    const rightPage = nb.pages[rightIdx];
+
+    if (leftPage) {
+      readerLeftContent.textContent = leftPage.text;
+      readerLeftNum.textContent = leftIdx + 1;
+      readerLeftPage.classList.remove('empty');
+    } else {
+      readerLeftContent.textContent = '';
+      readerLeftNum.textContent = '';
+      readerLeftPage.classList.add('empty');
+    }
+
+    if (rightPage) {
+      readerRightContent.textContent = rightPage.text;
+      readerRightNum.textContent = rightIdx + 1;
+      readerRightPage.classList.remove('empty');
+    } else {
+      readerRightContent.textContent = '';
+      readerRightNum.textContent = '';
+      readerRightPage.classList.add('empty');
+    }
+  }
+
+  readerLeftPage.addEventListener('click', () => {
+    if (readerSpreadStart <= 0) return;
+    readerSpreadStart = Math.max(0, readerSpreadStart - 2);
+    renderReaderSpread();
+  });
+
+  readerRightPage.addEventListener('click', () => {
+    const notebooks = loadNotebooks();
+    const nb = notebooks[currentNotebookIndex];
+    if (!nb) return;
+    const nextStart = readerSpreadStart + 2;
+    if (nextStart < nb.pages.length) {
+      readerSpreadStart = nextStart;
+      renderReaderSpread();
+    }
+  });
+
+  readerClose.addEventListener('click', closeReader);
+  readerOverlay.addEventListener('click', (e) => { if (e.target === readerOverlay) closeReader(); });
+  document.addEventListener('keydown', (e) => {
+    if (!readerOverlay.classList.contains('open')) return;
+    if (e.key === 'Escape') closeReader();
+    if (e.key === 'ArrowLeft') readerLeftPage.click();
+    if (e.key === 'ArrowRight') readerRightPage.click();
   });
 
   // ---- new notebook modal ----
