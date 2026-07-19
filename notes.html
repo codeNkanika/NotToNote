@@ -288,32 +288,33 @@
     padding-bottom:20px;
   }
   .notebook-card{
-    position:relative;
-    aspect-ratio:3/4;
     border-radius:14px;
-    background-size:cover;
-    background-position:center;
-    box-shadow:0 10px 22px rgba(91,74,62,0.18);
+    box-shadow:0 8px 18px rgba(91,74,62,0.14);
     cursor:pointer;
     overflow:hidden;
     transition:transform .2s ease;
     border:1px solid var(--line);
+    background:var(--paper);
   }
-  .notebook-card:hover{ transform:translateY(-5px) rotate(-1deg); }
-  .notebook-card.cover-blush{ background:linear-gradient(160deg,var(--blush),var(--blush-deep)); }
-  .notebook-card.cover-sage{ background:linear-gradient(160deg,var(--sage),var(--sage-deep)); }
-  .notebook-card.cover-gold{ background:linear-gradient(160deg,#F3D9AE,var(--gold)); }
-  .notebook-card.cover-cream{ background:linear-gradient(160deg,#fff,var(--cream)); }
+  .notebook-card:hover{ transform:translateY(-5px); }
+  .notebook-cover{
+    position:relative;
+    aspect-ratio:4/3;
+    background-size:cover;
+    background-position:center;
+  }
+  .notebook-cover.cover-blush{ background:linear-gradient(160deg,var(--blush),var(--blush-deep)); }
+  .notebook-cover.cover-sage{ background:linear-gradient(160deg,var(--sage),var(--sage-deep)); }
+  .notebook-cover.cover-gold{ background:linear-gradient(160deg,#F3D9AE,var(--gold)); }
+  .notebook-cover.cover-cream{ background:linear-gradient(160deg,#fff,var(--cream)); }
   .notebook-icon{
     position:absolute; top:50%; left:50%;
     transform:translate(-50%,-50%);
-    font-size:34px;
+    font-size:32px;
     opacity:0.55;
   }
-  .notebook-scrim{
-    position:absolute; left:0; right:0; bottom:0;
-    background:linear-gradient(to top, rgba(40,30,22,0.75), transparent);
-    padding:26px 12px 10px;
+  .notebook-caption{
+    padding:10px 12px 12px;
     display:flex;
     flex-direction:column;
     gap:2px;
@@ -323,13 +324,13 @@
     font-style:italic;
     font-weight:600;
     font-size:14px;
-    color:#fff;
+    color:var(--brown);
     line-height:1.25;
   }
   .notebook-count{
     font-family:'Space Mono', monospace;
     font-size:10px;
-    color:rgba(255,255,255,0.8);
+    color:var(--brown-soft);
   }
 
   /* ---------- notebook detail ---------- */
@@ -349,38 +350,42 @@
 
   .notebook-header{
     border-radius:18px;
-    min-height:130px;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+    background:var(--paper);
+    border:1px solid var(--line);
+  }
+  .notebook-cover-detail{
+    position:relative;
+    height:170px;
     background-size:cover;
     background-position:center;
-    box-shadow:var(--shadow);
-    overflow:hidden;
-    margin-bottom:20px;
   }
-  .notebook-header.cover-blush{ background:linear-gradient(160deg,var(--blush),var(--blush-deep)); }
-  .notebook-header.cover-sage{ background:linear-gradient(160deg,var(--sage),var(--sage-deep)); }
-  .notebook-header.cover-gold{ background:linear-gradient(160deg,#F3D9AE,var(--gold)); }
-  .notebook-header.cover-cream{ background:linear-gradient(160deg,#fff,var(--cream)); }
-  .notebook-header-scrim{
-    background:linear-gradient(to top, rgba(40,30,22,0.7), transparent 70%);
-    min-height:130px;
+  .notebook-cover-detail.cover-blush{ background:linear-gradient(160deg,var(--blush),var(--blush-deep)); }
+  .notebook-cover-detail.cover-sage{ background:linear-gradient(160deg,var(--sage),var(--sage-deep)); }
+  .notebook-cover-detail.cover-gold{ background:linear-gradient(160deg,#F3D9AE,var(--gold)); }
+  .notebook-cover-detail.cover-cream{ background:linear-gradient(160deg,#fff,var(--cream)); }
+  .notebook-cover-detail .notebook-icon{ font-size:44px; }
+  .notebook-caption-detail{
     display:flex;
-    flex-direction:column;
-    justify-content:flex-end;
-    padding:18px 20px;
-    gap:8px;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:16px 18px;
   }
-  .notebook-header-scrim h2{
+  .notebook-caption-detail h2{
     font-family:'Fraunces', serif;
     font-style:italic;
     font-weight:600;
-    font-size:24px;
-    color:#fff;
+    font-size:22px;
+    color:var(--brown);
     margin:0;
   }
   .delete-notebook-btn{
-    align-self:flex-start;
-    background:rgba(255,255,255,0.85);
-    border:none;
+    flex-shrink:0;
+    background:var(--cream);
+    border:1px solid var(--line);
     border-radius:14px;
     font-family:'Quicksand', sans-serif;
     font-size:11px;
@@ -761,12 +766,13 @@
     notebooksEmpty.style.display = notebooks.length ? 'none' : 'block';
     notebooks.forEach((nb, i) => {
       const card = document.createElement('div');
-      card.className = 'notebook-card' + (nb.cover ? '' : ' cover-' + nb.color);
-      if (nb.cover) card.style.backgroundImage = `url(${nb.cover})`;
-      const iconHtml = nb.cover ? '' : '<span class="notebook-icon">📔</span>';
+      card.className = 'notebook-card';
+      const coverHtml = nb.cover
+        ? `<div class="notebook-cover" style="background-image:url(${nb.cover})"></div>`
+        : `<div class="notebook-cover cover-${nb.color}"><span class="notebook-icon">📔</span></div>`;
       card.innerHTML = `
-        ${iconHtml}
-        <div class="notebook-scrim">
+        ${coverHtml}
+        <div class="notebook-caption">
           <span class="notebook-title">${escapeHtml(nb.title)}</span>
           <span class="notebook-count">${nb.pages.length} page${nb.pages.length === 1 ? '' : 's'}</span>
         </div>
@@ -796,10 +802,13 @@
     const nb = notebooks[currentNotebookIndex];
     if (!nb) { backToNotebooksList(); return; }
 
-    notebookDetailHeader.className = 'notebook-header' + (nb.cover ? '' : ' cover-' + nb.color);
-    notebookDetailHeader.style.backgroundImage = nb.cover ? `url(${nb.cover})` : '';
+    const coverHtml = nb.cover
+      ? `<div class="notebook-cover-detail" style="background-image:url(${nb.cover})"></div>`
+      : `<div class="notebook-cover-detail cover-${nb.color}"><span class="notebook-icon">📔</span></div>`;
+    notebookDetailHeader.className = 'notebook-header';
     notebookDetailHeader.innerHTML = `
-      <div class="notebook-header-scrim">
+      ${coverHtml}
+      <div class="notebook-caption-detail">
         <h2>${escapeHtml(nb.title)}</h2>
         <button class="delete-notebook-btn" id="deleteNotebookBtn">delete notebook</button>
       </div>
@@ -935,3 +944,4 @@
 
 </body>
 </html>
+
