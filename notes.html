@@ -404,49 +404,12 @@
     flex-wrap:wrap;
     margin-bottom:14px;
   }
-  .page-nav{
+  .pages-stack{
     display:flex;
-    align-items:center;
-    gap:10px;
+    flex-direction:column;
+    gap:26px;
+    margin-top:6px;
   }
-  .page-nav-btn{
-    background:var(--paper);
-    border:1px solid var(--line);
-    border-radius:10px;
-    width:30px; height:30px;
-    font-family:'Quicksand', sans-serif;
-    font-size:16px;
-    color:var(--brown);
-    cursor:pointer;
-    box-shadow:var(--shadow);
-  }
-  .page-nav-btn:hover:not(:disabled){ background:var(--blush); }
-  .page-nav-btn:disabled{ opacity:0.35; cursor:default; }
-  .page-indicator{
-    font-family:'Space Mono', monospace;
-    font-size:11.5px;
-    color:var(--brown-soft);
-    min-width:88px;
-    text-align:center;
-  }
-  .page-actions{ display:flex; gap:8px; }
-  .page-action-btn{
-    background:var(--paper);
-    border:1px solid var(--line);
-    border-radius:14px;
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
-    font-size:11.5px;
-    color:var(--brown);
-    padding:7px 13px;
-    cursor:pointer;
-    box-shadow:var(--shadow);
-    transition:background .2s ease;
-  }
-  .page-action-btn:hover:not(:disabled){ background:var(--blush); }
-  .page-action-btn.danger:hover:not(:disabled){ background:#f4c9c9; }
-  .page-action-btn:disabled{ opacity:0.35; cursor:default; }
-
   .notebook-page{
     position:relative;
     background:
@@ -461,8 +424,7 @@
     border:1px solid var(--line);
     border-radius:12px;
     box-shadow:var(--shadow);
-    padding:12px 22px 12px 46px;
-    margin-bottom:28px;
+    padding:40px 22px 12px 46px;
   }
   .notebook-page::before{
     content:"";
@@ -472,10 +434,26 @@
     background:var(--blush-deep);
     opacity:0.55;
   }
+  .remove-page-btn{
+    position:absolute;
+    top:10px; right:14px;
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:10px;
+    font-family:'Quicksand', sans-serif;
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--brown-soft);
+    padding:4px 11px;
+    cursor:pointer;
+    z-index:2;
+  }
+  .remove-page-btn:hover:not(:disabled){ color:var(--brown); background:#fff; }
+  .remove-page-btn:disabled{ opacity:0.3; cursor:default; }
   .notebook-page textarea{
     display:block;
     width:100%;
-    min-height:420px;
+    min-height:600px;
     border:none;
     background:transparent;
     resize:vertical;
@@ -488,6 +466,23 @@
     padding:0;
   }
   .notebook-page textarea::placeholder{ color:var(--brown-soft); opacity:0.7; }
+
+  .add-page-btn{
+    display:block;
+    width:100%;
+    background:var(--paper);
+    border:2px dashed var(--line);
+    border-radius:14px;
+    padding:16px;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--brown-soft);
+    cursor:pointer;
+    margin:26px 0 24px;
+    transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .add-page-btn:hover{ background:var(--blush); color:var(--brown); border-color:var(--sage-deep); }
 
   /* ---------- new notebook modal ---------- */
   .nb-overlay{
@@ -660,21 +655,9 @@
     <button class="back-to-notebooks" id="backToNotebooks">← all notebooks</button>
     <div class="notebook-header" id="notebookDetailHeader"></div>
 
-    <div class="page-toolbar">
-      <div class="page-nav">
-        <button class="page-nav-btn" id="prevPageBtn">‹</button>
-        <span class="page-indicator" id="pageIndicator">page 1 of 1</span>
-        <button class="page-nav-btn" id="nextPageBtn">›</button>
-      </div>
-      <div class="page-actions">
-        <button class="page-action-btn" id="newPageBtn">+ new page</button>
-        <button class="page-action-btn danger" id="deletePageBtn">remove page</button>
-      </div>
-    </div>
+    <div class="pages-stack" id="pagesStack"></div>
 
-    <div class="notebook-page">
-      <textarea id="pageTextarea" placeholder="start writing..."></textarea>
-    </div>
+    <button class="add-page-btn" id="newPageBtn">+ add page</button>
   </div>
 
   <footer>made with 🍓 for slow mornings and softer thoughts</footer>
@@ -808,12 +791,8 @@
   const notebooksGrid = document.getElementById('notebooksGrid');
   const notebooksEmpty = document.getElementById('notebooksEmpty');
   const notebookDetailHeader = document.getElementById('notebookDetailHeader');
-  const pageTextarea = document.getElementById('pageTextarea');
-  const pageIndicator = document.getElementById('pageIndicator');
-  const prevPageBtn = document.getElementById('prevPageBtn');
-  const nextPageBtn = document.getElementById('nextPageBtn');
+  const pagesStack = document.getElementById('pagesStack');
   const newPageBtn = document.getElementById('newPageBtn');
-  const deletePageBtn = document.getElementById('deletePageBtn');
   const backToNotebooksBtn = document.getElementById('backToNotebooks');
   const newNotebookBtn = document.getElementById('newNotebookBtn');
   const nbOverlay = document.getElementById('nbOverlay');
@@ -824,7 +803,6 @@
   const createNotebookBtn = document.getElementById('createNotebookBtn');
 
   let currentNotebookIndex = null;
-  let currentPageIdx = 0;
   let pendingCover = null;
   let pendingColor = 'blush';
 
@@ -868,24 +846,25 @@
       nb.pages.push(makeBlankPage());
       saveNotebooks(notebooks);
     }
-    currentPageIdx = nb.pages.length - 1;
     panelNotebook.style.display = 'none';
     panelNotebookDetail.style.display = 'block';
     renderNotebookDetail();
   }
 
-  function saveCurrentPage(){
+  function flushAllPages(){
     if (currentNotebookIndex === null) return;
     const notebooks = loadNotebooks();
     const nb = notebooks[currentNotebookIndex];
-    if (nb && nb.pages[currentPageIdx] !== undefined) {
-      nb.pages[currentPageIdx].text = pageTextarea.value;
-      saveNotebooks(notebooks);
-    }
+    if (!nb) return;
+    const textareas = pagesStack.querySelectorAll('textarea');
+    textareas.forEach((ta, i) => {
+      if (nb.pages[i]) nb.pages[i].text = ta.value;
+    });
+    saveNotebooks(notebooks);
   }
 
   function backToNotebooksList(){
-    if (currentNotebookIndex !== null) saveCurrentPage();
+    if (currentNotebookIndex !== null) flushAllPages();
     currentNotebookIndex = null;
     panelNotebookDetail.style.display = 'none';
     panelNotebook.style.display = 'block';
@@ -918,53 +897,73 @@
       }
     });
 
-    pageTextarea.value = nb.pages[currentPageIdx] ? nb.pages[currentPageIdx].text : '';
-    pageIndicator.textContent = `page ${currentPageIdx + 1} of ${nb.pages.length}`;
-    prevPageBtn.disabled = currentPageIdx === 0;
-    nextPageBtn.disabled = currentPageIdx === nb.pages.length - 1;
-    deletePageBtn.disabled = nb.pages.length <= 1;
+    pagesStack.innerHTML = '';
+    nb.pages.forEach((page, pi) => {
+      const pageEl = document.createElement('div');
+      pageEl.className = 'notebook-page';
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-page-btn';
+      removeBtn.textContent = 'remove page';
+      removeBtn.disabled = nb.pages.length <= 1;
+      removeBtn.addEventListener('click', () => removePage(pi));
+
+      const ta = document.createElement('textarea');
+      ta.placeholder = 'start writing...';
+      ta.value = page.text;
+      let saveTimer = null;
+      ta.addEventListener('input', () => {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+          const all = loadNotebooks();
+          if (all[currentNotebookIndex] && all[currentNotebookIndex].pages[pi] !== undefined) {
+            all[currentNotebookIndex].pages[pi].text = ta.value;
+            saveNotebooks(all);
+          }
+        }, 400);
+      });
+      ta.addEventListener('blur', () => {
+        const all = loadNotebooks();
+        if (all[currentNotebookIndex] && all[currentNotebookIndex].pages[pi] !== undefined) {
+          all[currentNotebookIndex].pages[pi].text = ta.value;
+          saveNotebooks(all);
+        }
+      });
+
+      pageEl.appendChild(removeBtn);
+      pageEl.appendChild(ta);
+      pagesStack.appendChild(pageEl);
+    });
   }
 
-  let pageSaveTimer = null;
-  pageTextarea.addEventListener('input', () => {
-    clearTimeout(pageSaveTimer);
-    pageSaveTimer = setTimeout(saveCurrentPage, 400);
-  });
-  pageTextarea.addEventListener('blur', saveCurrentPage);
-
-  prevPageBtn.addEventListener('click', () => {
-    saveCurrentPage();
-    if (currentPageIdx > 0) currentPageIdx--;
-    renderNotebookDetail();
-  });
-
-  nextPageBtn.addEventListener('click', () => {
-    saveCurrentPage();
-    const nb = loadNotebooks()[currentNotebookIndex];
-    if (nb && currentPageIdx < nb.pages.length - 1) currentPageIdx++;
-    renderNotebookDetail();
-  });
-
-  newPageBtn.addEventListener('click', () => {
-    saveCurrentPage();
-    const notebooks = loadNotebooks();
-    const nb = notebooks[currentNotebookIndex];
-    nb.pages.push(makeBlankPage());
-    saveNotebooks(notebooks);
-    currentPageIdx = nb.pages.length - 1;
-    renderNotebookDetail();
-    pageTextarea.focus();
-  });
-
-  deletePageBtn.addEventListener('click', () => {
+  function removePage(pi){
     const notebooks = loadNotebooks();
     const nb = notebooks[currentNotebookIndex];
     if (!nb || nb.pages.length <= 1) return;
     if (!confirm('remove this page?')) return;
-    nb.pages.splice(currentPageIdx, 1);
-    if (currentPageIdx >= nb.pages.length) currentPageIdx = nb.pages.length - 1;
+    flushAllPages();
+    const fresh = loadNotebooks();
+    fresh[currentNotebookIndex].pages.splice(pi, 1);
+    saveNotebooks(fresh);
+    renderNotebookDetail();
+  }
+
+  newPageBtn.addEventListener('click', () => {
+    flushAllPages();
+    const notebooks = loadNotebooks();
+    const nb = notebooks[currentNotebookIndex];
+    nb.pages.push(makeBlankPage());
     saveNotebooks(notebooks);
     renderNotebookDetail();
+    requestAnimationFrame(() => {
+      const allPages = pagesStack.querySelectorAll('.notebook-page');
+      const last = allPages[allPages.length - 1];
+      if (last) {
+        last.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const ta = last.querySelector('textarea');
+        if (ta) ta.focus();
+      }
+    });
   });
 
   // ---- new notebook modal ----
