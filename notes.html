@@ -457,8 +457,6 @@
     opacity:0.55;
   }
   .remove-page-btn{
-    position:absolute;
-    top:10px; right:14px;
     background:var(--cream);
     border:1px solid var(--line);
     border-radius:10px;
@@ -468,7 +466,6 @@
     color:var(--brown-soft);
     padding:4px 11px;
     cursor:pointer;
-    z-index:2;
   }
   .remove-page-btn:hover:not(:disabled){ color:var(--brown); background:#fff; }
   .remove-page-btn:disabled{ opacity:0.3; cursor:default; }
@@ -724,6 +721,133 @@
     letter-spacing:0.08em;
     padding:36px 0 44px;
   }
+
+  /* ---------- pdf download button ---------- */
+  .pdf-notebook-btn{
+    flex-shrink:0;
+    background:var(--gold);
+    border:1px solid var(--gold);
+    border-radius:14px;
+    font-family:'Quicksand', sans-serif;
+    font-size:11px;
+    font-weight:700;
+    color:#4a3c1e;
+    padding:5px 13px;
+    cursor:pointer;
+  }
+  .pdf-notebook-btn:hover{ filter:brightness(1.05); }
+  .pdf-notebook-btn:disabled{ opacity:0.55; cursor:default; }
+
+  /* ---------- page mini toolbar / photo controls ---------- */
+  .page-toolbar-mini{
+    position:absolute;
+    top:12px; right:16px;
+    display:flex;
+    gap:9px;
+    z-index:6;
+  }
+  .add-photo-btn,
+  .remove-page-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    border:none;
+    border-radius:20px;
+    font-family:'Quicksand', sans-serif;
+    font-size:11px;
+    font-weight:700;
+    padding:6px 14px;
+    cursor:pointer;
+    box-shadow:0 3px 8px rgba(91,74,62,0.16);
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  .add-photo-btn{
+    background:var(--sage);
+    color:var(--sage-ink);
+  }
+  .add-photo-btn:hover{
+    background:#b6c89c;
+    transform:translateY(-2px) scale(1.04);
+    box-shadow:0 7px 16px rgba(91,74,62,0.22);
+  }
+  .remove-page-btn{
+    background:var(--blush);
+    color:#8a4a58;
+  }
+  .remove-page-btn:hover:not(:disabled){
+    background:#f0c3cc;
+    color:#6b2f3b;
+    transform:translateY(-2px) scale(1.04);
+    box-shadow:0 7px 16px rgba(91,74,62,0.22);
+  }
+  .remove-page-btn:disabled{
+    opacity:0.35;
+    cursor:default;
+    box-shadow:none;
+  }
+
+  .images-layer{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:3;
+  }
+  .page-image{
+    position:absolute;
+    pointer-events:auto;
+    cursor:grab;
+    border-radius:6px;
+    box-shadow:0 6px 16px rgba(91,74,62,0.28);
+    touch-action:none;
+  }
+  .page-image.dragging{ cursor:grabbing; box-shadow:0 10px 24px rgba(91,74,62,0.38); }
+  .page-image img{
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border-radius:6px;
+    pointer-events:none;
+    -webkit-user-drag:none;
+  }
+  .page-image .img-del{
+    position:absolute;
+    top:-9px; right:-9px;
+    width:20px; height:20px;
+    border-radius:50%;
+    background:var(--brown);
+    color:#fff9f2;
+    border:2px solid var(--paper);
+    font-size:11px;
+    line-height:16px;
+    text-align:center;
+    cursor:pointer;
+    padding:0;
+    pointer-events:auto;
+  }
+  .page-image .img-resize{
+    position:absolute;
+    bottom:-7px; right:-7px;
+    width:15px; height:15px;
+    background:var(--gold);
+    border:2px solid var(--paper);
+    border-radius:50%;
+    cursor:nwse-resize;
+    pointer-events:auto;
+  }
+
+  .reader-page-image{
+    position:absolute;
+    border-radius:5px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.25);
+    overflow:hidden;
+  }
+  .reader-page-image img{
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
 </style>
 </head>
 <body>
@@ -780,6 +904,8 @@
     <button class="add-page-btn" id="newPageBtn">+ add page</button>
   </div>
 
+  <input type="file" id="pagePhotoFile" accept="image/*" hidden>
+
   <footer>made with 🍓 for slow mornings and softer thoughts</footer>
 
   <!-- new notebook modal -->
@@ -807,11 +933,13 @@
     <div class="reader-book">
       <div class="reader-page reader-page-left" id="readerLeftPage">
         <div class="reader-page-inner" id="readerLeftContent" data-placeholder="(blank page)"></div>
+        <div class="images-layer" id="readerLeftImages"></div>
         <span class="reader-page-num" id="readerLeftNum"></span>
       </div>
       <div class="reader-spine"></div>
       <div class="reader-page reader-page-right" id="readerRightPage">
         <div class="reader-page-inner" id="readerRightContent" data-placeholder="(blank page)"></div>
+        <div class="images-layer" id="readerRightImages"></div>
         <span class="reader-page-num" id="readerRightNum"></span>
       </div>
     </div>
@@ -971,8 +1099,13 @@
   }
 
   function makeBlankPage(){
-    return { text: '', date: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' }) };
+    return { text: '', date: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' }), images: [] };
   }
+
+  // shared hidden input used to add a photo to whichever page requested it
+  const pagePhotoFile = document.getElementById('pagePhotoFile');
+  let pendingPhotoPageIndex = null;
+  let photoIdCounter = 0;
 
   function openNotebook(i){
     currentNotebookIndex = i;
@@ -980,8 +1113,10 @@
     const nb = notebooks[i];
     if (!nb.pages.length) {
       nb.pages.push(makeBlankPage());
-      saveNotebooks(notebooks);
     }
+    let migrated = false;
+    nb.pages.forEach(p => { if (!Array.isArray(p.images)) { p.images = []; migrated = true; } });
+    if (migrated || !nb.pages.length) saveNotebooks(notebooks);
     panelNotebook.style.display = 'none';
     panelNotebookDetail.style.display = 'block';
     renderNotebookDetail();
@@ -1023,11 +1158,13 @@
         <h2>${escapeHtml(nb.title)}</h2>
         <div class="notebook-header-actions">
           <button class="read-notebook-btn" id="readNotebookBtn">📖 read</button>
+          <button class="pdf-notebook-btn" id="downloadPdfBtn">⬇ pdf</button>
           <button class="delete-notebook-btn" id="deleteNotebookBtn">delete notebook</button>
         </div>
       </div>
     `;
     document.getElementById('readNotebookBtn').addEventListener('click', openReader);
+    document.getElementById('downloadPdfBtn').addEventListener('click', downloadNotebookPdf);
     document.getElementById('deleteNotebookBtn').addEventListener('click', () => {
       if (confirm('delete this notebook and all its pages?')) {
         const all = loadNotebooks();
@@ -1039,14 +1176,31 @@
 
     pagesStack.innerHTML = '';
     nb.pages.forEach((page, pi) => {
+      if (!Array.isArray(page.images)) page.images = [];
+
       const pageEl = document.createElement('div');
       pageEl.className = 'notebook-page';
+
+      const toolbar = document.createElement('div');
+      toolbar.className = 'page-toolbar-mini';
+
+      const photoBtn = document.createElement('button');
+      photoBtn.className = 'add-photo-btn';
+      photoBtn.textContent = 'add photo';
+      photoBtn.addEventListener('click', () => {
+        pendingPhotoPageIndex = pi;
+        pagePhotoFile.value = '';
+        pagePhotoFile.click();
+      });
 
       const removeBtn = document.createElement('button');
       removeBtn.className = 'remove-page-btn';
       removeBtn.textContent = 'remove page';
       removeBtn.disabled = nb.pages.length <= 1;
       removeBtn.addEventListener('click', () => removePage(pi));
+
+      toolbar.appendChild(photoBtn);
+      toolbar.appendChild(removeBtn);
 
       const ta = document.createElement('textarea');
       ta.placeholder = 'start writing...';
@@ -1070,10 +1224,173 @@
         }
       });
 
-      pageEl.appendChild(removeBtn);
+      const imagesLayer = document.createElement('div');
+      imagesLayer.className = 'images-layer';
+      page.images.forEach((imgData, ii) => {
+        imagesLayer.appendChild(buildPageImageEl(pi, ii, imgData, pageEl));
+      });
+
+      pageEl.appendChild(toolbar);
       pageEl.appendChild(ta);
+      pageEl.appendChild(imagesLayer);
       pagesStack.appendChild(pageEl);
     });
+  }
+
+  // ---- photo handling for notebook pages (freely positioned, draggable + resizable) ----
+  pagePhotoFile.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    const pi = pendingPhotoPageIndex;
+    pendingPhotoPageIndex = null;
+    if (!file || pi === null) return;
+    try {
+      const dataUrl = await readAndResizeImage(file, 900);
+      const dims = await getImageDims(dataUrl);
+      const all = loadNotebooks();
+      const nb = all[currentNotebookIndex];
+      if (!nb || !nb.pages[pi]) return;
+      if (!Array.isArray(nb.pages[pi].images)) nb.pages[pi].images = [];
+      photoIdCounter += 1;
+      nb.pages[pi].images.push({
+        id: 'img_' + Date.now() + '_' + photoIdCounter,
+        src: dataUrl,
+        xPct: 8, yPct: 8, wPct: 32,
+        naturalW: dims.w, naturalH: dims.h
+      });
+      try {
+        saveNotebooks(all);
+      } catch (err) {
+        alert('that photo was too big to save — try a smaller one');
+        return;
+      }
+      renderNotebookDetail();
+    } catch (err) {
+      alert('could not read that image — try a different one');
+    }
+  });
+
+  function getImageDims(dataUrl){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ w: img.width, h: img.height });
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+  }
+
+  function buildPageImageEl(pageIndex, imgIndex, imgData, pageEl){
+    const wrap = document.createElement('div');
+    wrap.className = 'page-image';
+    const aspect = (imgData.naturalH && imgData.naturalW) ? (imgData.naturalH / imgData.naturalW) : 1;
+
+    function applyPosition(){
+      const rect = pageEl.getBoundingClientRect();
+      const w = rect.width * (imgData.wPct / 100);
+      const h = w * aspect;
+      wrap.style.left = (rect.width * (imgData.xPct / 100)) + 'px';
+      wrap.style.top = (rect.height * (imgData.yPct / 100)) + 'px';
+      wrap.style.width = w + 'px';
+      wrap.style.height = h + 'px';
+    }
+    applyPosition();
+
+    const img = document.createElement('img');
+    img.src = imgData.src;
+    img.draggable = false;
+    wrap.appendChild(img);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'img-del';
+    delBtn.textContent = '✕';
+    delBtn.title = 'remove photo';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const all = loadNotebooks();
+      const nb = all[currentNotebookIndex];
+      if (!nb || !nb.pages[pageIndex]) return;
+      nb.pages[pageIndex].images.splice(imgIndex, 1);
+      saveNotebooks(all);
+      renderNotebookDetail();
+    });
+    wrap.appendChild(delBtn);
+
+    const resizeHandle = document.createElement('div');
+    resizeHandle.className = 'img-resize';
+    wrap.appendChild(resizeHandle);
+
+    // ---- drag to move ----
+    let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+    wrap.addEventListener('pointerdown', (e) => {
+      if (e.target === resizeHandle || e.target === delBtn) return;
+      dragging = true;
+      wrap.classList.add('dragging');
+      wrap.setPointerCapture(e.pointerId);
+      startX = e.clientX; startY = e.clientY;
+      startLeft = parseFloat(wrap.style.left) || 0;
+      startTop = parseFloat(wrap.style.top) || 0;
+      e.preventDefault();
+    });
+    wrap.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const rect = pageEl.getBoundingClientRect();
+      let newLeft = startLeft + (e.clientX - startX);
+      let newTop = startTop + (e.clientY - startY);
+      newLeft = Math.max(0, Math.min(newLeft, rect.width - wrap.offsetWidth));
+      newTop = Math.max(0, Math.min(newTop, rect.height - wrap.offsetHeight));
+      wrap.style.left = newLeft + 'px';
+      wrap.style.top = newTop + 'px';
+    });
+    function endDrag(e){
+      if (!dragging) return;
+      dragging = false;
+      wrap.classList.remove('dragging');
+      const rect = pageEl.getBoundingClientRect();
+      imgData.xPct = (parseFloat(wrap.style.left) / rect.width) * 100;
+      imgData.yPct = (parseFloat(wrap.style.top) / rect.height) * 100;
+      persistImagePosition(pageIndex, imgIndex, imgData);
+    }
+    wrap.addEventListener('pointerup', endDrag);
+    wrap.addEventListener('pointercancel', endDrag);
+
+    // ---- drag handle to resize ----
+    let resizing = false, rStartX = 0, rStartW = 0;
+    resizeHandle.addEventListener('pointerdown', (e) => {
+      resizing = true;
+      resizeHandle.setPointerCapture(e.pointerId);
+      rStartX = e.clientX;
+      rStartW = wrap.offsetWidth;
+      e.stopPropagation();
+      e.preventDefault();
+    });
+    resizeHandle.addEventListener('pointermove', (e) => {
+      if (!resizing) return;
+      const rect = pageEl.getBoundingClientRect();
+      let newW = Math.max(40, Math.min(rStartW + (e.clientX - rStartX), rect.width - parseFloat(wrap.style.left)));
+      wrap.style.width = newW + 'px';
+      wrap.style.height = (newW * aspect) + 'px';
+    });
+    function endResize(e){
+      if (!resizing) return;
+      resizing = false;
+      const rect = pageEl.getBoundingClientRect();
+      imgData.wPct = (wrap.offsetWidth / rect.width) * 100;
+      persistImagePosition(pageIndex, imgIndex, imgData);
+    }
+    resizeHandle.addEventListener('pointerup', endResize);
+    resizeHandle.addEventListener('pointercancel', endResize);
+
+    return wrap;
+  }
+
+  function persistImagePosition(pageIndex, imgIndex, imgData){
+    const all = loadNotebooks();
+    const nb = all[currentNotebookIndex];
+    if (!nb || !nb.pages[pageIndex] || !nb.pages[pageIndex].images[imgIndex]) return;
+    const target = nb.pages[pageIndex].images[imgIndex];
+    target.xPct = imgData.xPct;
+    target.yPct = imgData.yPct;
+    target.wPct = imgData.wPct;
+    saveNotebooks(all);
   }
 
   function removePage(pi){
@@ -1115,6 +1432,25 @@
   const readerRightContent = document.getElementById('readerRightContent');
   const readerLeftNum = document.getElementById('readerLeftNum');
   const readerRightNum = document.getElementById('readerRightNum');
+  const readerLeftImages = document.getElementById('readerLeftImages');
+  const readerRightImages = document.getElementById('readerRightImages');
+
+  function renderReaderImages(container, page){
+    container.innerHTML = '';
+    if (!page || !Array.isArray(page.images)) return;
+    page.images.forEach(imgData => {
+      const el = document.createElement('div');
+      el.className = 'reader-page-image';
+      el.style.left = imgData.xPct + '%';
+      el.style.top = imgData.yPct + '%';
+      el.style.width = imgData.wPct + '%';
+      el.style.aspectRatio = (imgData.naturalW && imgData.naturalH) ? (imgData.naturalW + ' / ' + imgData.naturalH) : '1 / 1';
+      const img = document.createElement('img');
+      img.src = imgData.src;
+      el.appendChild(img);
+      container.appendChild(el);
+    });
+  }
 
   let readerSpreadStart = 0; // index of the page shown on the left sheet
 
@@ -1141,20 +1477,24 @@
       readerLeftContent.textContent = leftPage.text;
       readerLeftNum.textContent = leftIdx + 1;
       readerLeftPage.classList.remove('empty');
+      renderReaderImages(readerLeftImages, leftPage);
     } else {
       readerLeftContent.textContent = '';
       readerLeftNum.textContent = '';
       readerLeftPage.classList.add('empty');
+      renderReaderImages(readerLeftImages, null);
     }
 
     if (rightPage) {
       readerRightContent.textContent = rightPage.text;
       readerRightNum.textContent = rightIdx + 1;
       readerRightPage.classList.remove('empty');
+      renderReaderImages(readerRightImages, rightPage);
     } else {
       readerRightContent.textContent = '';
       readerRightNum.textContent = '';
       readerRightPage.classList.add('empty');
+      renderReaderImages(readerRightImages, null);
     }
   }
 
@@ -1260,6 +1600,194 @@
     closeNbModal();
     renderNotebooks();
   });
+
+  // ---- download notebook as pdf (cover page + every page, photos included) ----
+  function ensurePdfLibsLoaded(){
+    const load = (src) => new Promise((resolve, reject) => {
+      if (document.querySelector('script[data-lib="' + src + '"]')) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = src;
+      s.dataset.lib = src;
+      s.onload = resolve;
+      s.onerror = () => reject(new Error('failed to load ' + src));
+      document.head.appendChild(s);
+    });
+    const jobs = [];
+    if (!window.html2canvas) jobs.push(load('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'));
+    if (!window.jspdf) jobs.push(load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'));
+    return Promise.all(jobs);
+  }
+
+  const PDF_PAGE_W = 794;   // ~ A4 width at 96dpi
+  const PDF_PAGE_H = 1123;  // ~ A4 height at 96dpi
+  const PDF_COVER_BG = { blush:'linear-gradient(160deg,#F6DCE0,#EBB8C4)', sage:'linear-gradient(160deg,#C3D1AE,#8FA377)', gold:'linear-gradient(160deg,#F3D9AE,#E3A85C)', cream:'linear-gradient(160deg,#ffffff,#FBF6EF)' };
+
+  function buildCoverStageElement(nb){
+    const el = document.createElement('div');
+    el.style.width = PDF_PAGE_W + 'px';
+    el.style.height = PDF_PAGE_H + 'px';
+    el.style.position = 'relative';
+    el.style.background = '#FFFDFA';
+    el.style.fontFamily = "'Quicksand', sans-serif";
+    el.style.overflow = 'hidden';
+    el.style.boxSizing = 'border-box';
+
+    const art = document.createElement('div');
+    art.style.position = 'absolute';
+    art.style.inset = '0';
+    if (nb.cover) {
+      art.style.backgroundImage = `url(${nb.cover})`;
+      art.style.backgroundSize = 'cover';
+      art.style.backgroundPosition = 'center';
+    } else {
+      art.style.background = PDF_COVER_BG[nb.color] || PDF_COVER_BG.blush;
+    }
+    el.appendChild(art);
+
+    const shade = document.createElement('div');
+    shade.style.position = 'absolute';
+    shade.style.left = '0'; shade.style.right = '0'; shade.style.bottom = '0';
+    shade.style.height = '46%';
+    shade.style.background = 'linear-gradient(to top, rgba(30,22,16,0.65), rgba(30,22,16,0))';
+    el.appendChild(shade);
+
+    const cap = document.createElement('div');
+    cap.style.position = 'absolute';
+    cap.style.left = '48px'; cap.style.right = '48px'; cap.style.bottom = '56px';
+    cap.style.color = '#fff9f2';
+    cap.innerHTML = `
+      <div style="font-family:'Space Mono',monospace;font-size:13px;letter-spacing:0.25em;opacity:0.85;margin-bottom:14px;">🍈 HONEYDEW NOTES</div>
+      <div style="font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:44px;line-height:1.15;">${escapeHtml(nb.title)}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:12px;opacity:0.85;margin-top:16px;">${nb.pages.length} page${nb.pages.length === 1 ? '' : 's'} · ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+    `;
+    el.appendChild(cap);
+
+    return el;
+  }
+
+  function buildPageStageElement(page, pageNum, totalPages){
+    const el = document.createElement('div');
+    el.style.width = PDF_PAGE_W + 'px';
+    el.style.height = PDF_PAGE_H + 'px';
+    el.style.position = 'relative';
+    el.style.boxSizing = 'border-box';
+    el.style.background = `repeating-linear-gradient(to bottom, transparent 0, transparent 27px, #E7DCCB 27px, #E7DCCB 28px), #FFFDFA`;
+    el.style.padding = '54px 46px 40px 64px';
+    el.style.fontFamily = "'Fraunces', serif";
+    el.style.fontStyle = 'italic';
+
+    const rule = document.createElement('div');
+    rule.style.position = 'absolute';
+    rule.style.left = '46px'; rule.style.top = '0'; rule.style.bottom = '0';
+    rule.style.width = '1px';
+    rule.style.background = 'rgba(235,184,196,0.6)';
+    el.appendChild(rule);
+
+    const textEl = document.createElement('div');
+    textEl.style.fontSize = '17px';
+    textEl.style.lineHeight = '31px';
+    textEl.style.color = '#5B4A3E';
+    textEl.style.whiteSpace = 'pre-wrap';
+    textEl.style.wordWrap = 'break-word';
+    textEl.style.position = 'relative';
+    textEl.style.zIndex = '1';
+    textEl.textContent = page.text || '';
+    el.appendChild(textEl);
+
+    const imagesLayer = document.createElement('div');
+    imagesLayer.style.position = 'absolute';
+    imagesLayer.style.inset = '0';
+    imagesLayer.style.zIndex = '2';
+    (page.images || []).forEach(imgData => {
+      const wrap = document.createElement('div');
+      wrap.style.position = 'absolute';
+      wrap.style.left = imgData.xPct + '%';
+      wrap.style.top = imgData.yPct + '%';
+      wrap.style.width = imgData.wPct + '%';
+      wrap.style.aspectRatio = (imgData.naturalW && imgData.naturalH) ? (imgData.naturalW + ' / ' + imgData.naturalH) : '1 / 1';
+      wrap.style.borderRadius = '4px';
+      wrap.style.overflow = 'hidden';
+      wrap.style.boxShadow = '0 6px 16px rgba(91,74,62,0.3)';
+      const img = document.createElement('img');
+      img.src = imgData.src;
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+      img.style.display = 'block';
+      wrap.appendChild(img);
+      imagesLayer.appendChild(wrap);
+    });
+    el.appendChild(imagesLayer);
+
+    const num = document.createElement('div');
+    num.style.position = 'absolute';
+    num.style.bottom = '16px';
+    num.style.left = '0'; num.style.right = '0';
+    num.style.textAlign = 'center';
+    num.style.fontFamily = "'Space Mono', monospace";
+    num.style.fontStyle = 'normal';
+    num.style.fontSize = '10px';
+    num.style.color = '#8A7A6C';
+    num.textContent = pageNum + ' / ' + totalPages;
+    el.appendChild(num);
+
+    return el;
+  }
+
+  async function renderStageElToPdf(stage, el, pdf, addPageBefore){
+    stage.appendChild(el);
+    // allow images/fonts inside the element a moment to paint
+    await new Promise(r => setTimeout(r, 60));
+    const canvas = await html2canvas(el, { width: PDF_PAGE_W, height: PDF_PAGE_H, scale: 2, useCORS: true, backgroundColor: '#FFFDFA' });
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    if (addPageBefore) pdf.addPage([PDF_PAGE_W, PDF_PAGE_H], 'portrait');
+    pdf.addImage(imgData, 'JPEG', 0, 0, PDF_PAGE_W, PDF_PAGE_H);
+    stage.removeChild(el);
+  }
+
+  async function downloadNotebookPdf(){
+    flushAllPages();
+    const notebooks = loadNotebooks();
+    const nb = notebooks[currentNotebookIndex];
+    if (!nb) return;
+
+    const btn = document.getElementById('downloadPdfBtn');
+    const originalLabel = btn.textContent;
+    btn.textContent = 'preparing…';
+    btn.disabled = true;
+
+    const stage = document.createElement('div');
+    stage.style.position = 'fixed';
+    stage.style.left = '-99999px';
+    stage.style.top = '0';
+    stage.style.width = PDF_PAGE_W + 'px';
+    document.body.appendChild(stage);
+
+    try {
+      await ensurePdfLibsLoaded();
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit: 'px', format: [PDF_PAGE_W, PDF_PAGE_H], compress: true });
+
+      const coverEl = buildCoverStageElement(nb);
+      await renderStageElToPdf(stage, coverEl, pdf, false);
+
+      const total = nb.pages.length;
+      for (let i = 0; i < total; i++) {
+        const pageEl = buildPageStageElement(nb.pages[i], i + 1, total);
+        await renderStageElToPdf(stage, pageEl, pdf, true);
+      }
+
+      const filename = (nb.title || 'notebook').trim().replace(/[^a-z0-9]+/gi, '_').toLowerCase() + '.pdf';
+      pdf.save(filename || 'notebook.pdf');
+    } catch (err) {
+      console.error(err);
+      alert('sorry, could not create the pdf — please try again');
+    } finally {
+      document.body.removeChild(stage);
+      btn.textContent = originalLabel;
+      btn.disabled = false;
+    }
+  }
 </script>
 
 </body>
