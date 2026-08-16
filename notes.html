@@ -1671,21 +1671,43 @@
     el.style.height = PDF_PAGE_H + 'px';
     el.style.position = 'relative';
     el.style.boxSizing = 'border-box';
-    el.style.background = `repeating-linear-gradient(to bottom, transparent 0, transparent 27px, #E7DCCB 27px, #E7DCCB 28px), #FFFDFA`;
+    el.style.background = '#FFFDFA';
     el.style.padding = '54px 46px 40px 64px';
     el.style.fontFamily = "'Fraunces', serif";
     el.style.fontStyle = 'italic';
+    el.style.overflow = 'hidden';
+
+    const LINE_HEIGHT = 31;
+    const TEXT_TOP = 54; // matches el padding-top so first rule sits under the first text line
+
+    // ruled lines drawn as real elements (more reliable than a CSS gradient under html2canvas)
+    const linesLayer = document.createElement('div');
+    linesLayer.style.position = 'absolute';
+    linesLayer.style.left = '0'; linesLayer.style.right = '0';
+    linesLayer.style.top = '0'; linesLayer.style.bottom = '0';
+    linesLayer.style.zIndex = '0';
+    for (let y = TEXT_TOP + LINE_HEIGHT; y < PDF_PAGE_H - 30; y += LINE_HEIGHT) {
+      const line = document.createElement('div');
+      line.style.position = 'absolute';
+      line.style.left = '0'; line.style.right = '0';
+      line.style.top = y + 'px';
+      line.style.height = '1px';
+      line.style.background = '#E7DCCB';
+      linesLayer.appendChild(line);
+    }
+    el.appendChild(linesLayer);
 
     const rule = document.createElement('div');
     rule.style.position = 'absolute';
     rule.style.left = '46px'; rule.style.top = '0'; rule.style.bottom = '0';
     rule.style.width = '1px';
     rule.style.background = 'rgba(235,184,196,0.6)';
+    rule.style.zIndex = '0';
     el.appendChild(rule);
 
     const textEl = document.createElement('div');
     textEl.style.fontSize = '17px';
-    textEl.style.lineHeight = '31px';
+    textEl.style.lineHeight = LINE_HEIGHT + 'px';
     textEl.style.color = '#5B4A3E';
     textEl.style.whiteSpace = 'pre-wrap';
     textEl.style.wordWrap = 'break-word';
@@ -1734,14 +1756,36 @@
     return el;
   }
 
+  async function waitForImagesToDecode(el){
+    const imgs = Array.from(el.querySelectorAll('img'));
+    await Promise.all(imgs.map(img => {
+      if (img.complete && img.naturalWidth) {
+        return img.decode ? img.decode().catch(() => {}) : Promise.resolve();
+      }
+      return new Promise(resolve => {
+        img.addEventListener('load', () => resolve(), { once: true });
+        img.addEventListener('error', () => resolve(), { once: true });
+      });
+    }));
+  }
+
   async function renderStageElToPdf(stage, el, pdf, addPageBefore){
     stage.appendChild(el);
-    // allow images/fonts inside the element a moment to paint
-    await new Promise(r => setTimeout(r, 60));
-    const canvas = await html2canvas(el, { width: PDF_PAGE_W, height: PDF_PAGE_H, scale: 2, useCORS: true, backgroundColor: '#FFFDFA' });
-    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    await waitForImagesToDecode(el);
+    // allow layout/fonts a moment to settle before the snapshot
+    await new Promise(r => setTimeout(r, 120));
+    const canvas = await html2canvas(el, {
+      width: PDF_PAGE_W,
+      height: PDF_PAGE_H,
+      scale: 3,
+      useCORS: true,
+      backgroundColor: '#FFFDFA',
+      imageTimeout: 15000,
+      logging: false
+    });
+    const imgData = canvas.toDataURL('image/png');
     if (addPageBefore) pdf.addPage([PDF_PAGE_W, PDF_PAGE_H], 'portrait');
-    pdf.addImage(imgData, 'JPEG', 0, 0, PDF_PAGE_W, PDF_PAGE_H);
+    pdf.addImage(imgData, 'PNG', 0, 0, PDF_PAGE_W, PDF_PAGE_H, undefined, 'FAST');
     stage.removeChild(el);
   }
 
@@ -1765,6 +1809,9 @@
 
     try {
       await ensurePdfLibsLoaded();
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (e) {}
+      }
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF({ unit: 'px', format: [PDF_PAGE_W, PDF_PAGE_H], compress: true });
 
