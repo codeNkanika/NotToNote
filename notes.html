@@ -1068,6 +1068,7 @@
 
   let currentNotebookIndex = null;
   let pendingCover = null;
+  let pendingCoverHiRes = null; // higher-res version, used only for crisp PDF export
   let pendingColor = 'blush';
 
   function loadNotebooks(){
@@ -1244,7 +1245,7 @@
     pendingPhotoPageIndex = null;
     if (!file || pi === null) return;
     try {
-      const dataUrl = await readAndResizeImage(file, 900);
+      const dataUrl = await readAndResizeImage(file, 900, 0.82);
       const dims = await getImageDims(dataUrl);
       const all = loadNotebooks();
       const nb = all[currentNotebookIndex];
@@ -1528,6 +1529,7 @@
   function openNbModal(){
     nbTitleInput.value = '';
     pendingCover = null;
+    pendingCoverHiRes = null;
     pendingColor = 'blush';
     coverPreview.style.backgroundImage = '';
     coverPreview.textContent = '＋ add cover photo';
@@ -1543,7 +1545,8 @@
 
   coverPreview.addEventListener('click', () => coverFile.click());
 
-  function readAndResizeImage(file, maxDim){
+  function readAndResizeImage(file, maxDim, quality){
+    quality = (typeof quality === 'number') ? quality : 0.82;
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -1556,7 +1559,7 @@
           canvas.width = w; canvas.height = h;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL('image/jpeg', 0.82));
+          resolve(canvas.toDataURL('image/jpeg', quality));
         };
         img.onerror = reject;
         img.src = e.target.result;
@@ -1566,11 +1569,21 @@
     });
   }
 
+  // Cover photos get two saved versions:
+  //  - pendingCover: a smaller copy used for on-screen thumbnails/backgrounds (keeps localStorage light)
+  //  - pendingCoverHiRes: a larger, higher-quality copy used only when building the PDF cover page,
+  //    so the full-bleed A4 cover doesn't need to be stretched from a tiny source image (which is what
+  //    caused the blur).
   coverFile.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      pendingCover = await readAndResizeImage(file, 1000);
+      const [thumb, hiRes] = await Promise.all([
+        readAndResizeImage(file, 1000, 0.85),
+        readAndResizeImage(file, 1800, 0.9)
+      ]);
+      pendingCover = thumb;
+      pendingCoverHiRes = hiRes;
       coverPreview.style.backgroundImage = `url(${pendingCover})`;
       coverPreview.textContent = '';
     } catch (err) {
@@ -1590,12 +1603,18 @@
     const title = nbTitleInput.value.trim();
     if (!title) { nbTitleInput.focus(); return; }
     const notebooks = loadNotebooks();
-    notebooks.unshift({ title, cover: pendingCover, color: pendingColor, pages: [] });
+    notebooks.unshift({ title, cover: pendingCover, coverHiRes: pendingCoverHiRes, color: pendingColor, pages: [] });
     try {
       saveNotebooks(notebooks);
     } catch (err) {
-      alert("that cover image was too big to save — try a smaller photo");
-      return;
+      // localStorage was full — retry without the hi-res copy before giving up entirely
+      try {
+        notebooks[0].coverHiRes = null;
+        saveNotebooks(notebooks);
+      } catch (err2) {
+        alert("that cover image was too big to save — try a smaller photo");
+        return;
+      }
     }
     closeNbModal();
     renderNotebooks();
@@ -1635,8 +1654,12 @@
     const art = document.createElement('div');
     art.style.position = 'absolute';
     art.style.inset = '0';
-    if (nb.cover) {
-      art.style.backgroundImage = `url(${nb.cover})`;
+    // Use the high-resolution cover copy for the PDF when available, since the full-bleed
+    // A4 page at 3x render scale needs a much larger source image than the on-screen thumbnail
+    // to avoid looking blurry/pixelated.
+    const coverSrc = nb.coverHiRes || nb.cover;
+    if (coverSrc) {
+      art.style.backgroundImage = `url(${coverSrc})`;
       art.style.backgroundSize = 'cover';
       art.style.backgroundPosition = 'center';
     } else {
