@@ -799,6 +799,7 @@
     border-radius:6px;
     box-shadow:0 6px 16px rgba(91,74,62,0.28);
     touch-action:none;
+    height:auto;
   }
   .page-image.dragging{ cursor:grabbing; box-shadow:0 10px 24px rgba(91,74,62,0.38); }
   .page-image img{
@@ -1282,18 +1283,16 @@
   function buildPageImageEl(pageIndex, imgIndex, imgData, pageEl){
     const wrap = document.createElement('div');
     wrap.className = 'page-image';
-    const aspect = (imgData.naturalH && imgData.naturalW) ? (imgData.naturalH / imgData.naturalW) : 1;
-
-    function applyPosition(){
-      const rect = pageEl.getBoundingClientRect();
-      const w = rect.width * (imgData.wPct / 100);
-      const h = w * aspect;
-      wrap.style.left = (rect.width * (imgData.xPct / 100)) + 'px';
-      wrap.style.top = (rect.height * (imgData.yPct / 100)) + 'px';
-      wrap.style.width = w + 'px';
-      wrap.style.height = h + 'px';
-    }
-    applyPosition();
+    // Position with CSS percentages + aspect-ratio rather than computing pixel values from
+    // pageEl.getBoundingClientRect(). At the point this runs, pageEl has not been appended to
+    // the document yet (that happens later in renderNotebookDetail), so its rect was always
+    // 0x0 here — which is why photos snapped back to the top-left corner every time the
+    // notebook was reopened. Percentages don't need pageEl to be in the DOM to be correct.
+    const aspectRatioCss = (imgData.naturalW && imgData.naturalH) ? (imgData.naturalW + ' / ' + imgData.naturalH) : '1 / 1';
+    wrap.style.left = imgData.xPct + '%';
+    wrap.style.top = imgData.yPct + '%';
+    wrap.style.width = imgData.wPct + '%';
+    wrap.style.aspectRatio = aspectRatioCss;
 
     const img = document.createElement('img');
     img.src = imgData.src;
@@ -1319,62 +1318,66 @@
     resizeHandle.className = 'img-resize';
     wrap.appendChild(resizeHandle);
 
-    // ---- drag to move ----
-    let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+    // ---- drag to move (tracked in % of pageEl's current size, since pageEl is guaranteed
+    // to be attached to the DOM by the time a drag can actually happen) ----
+    let dragging = false, startX = 0, startY = 0, startLeftPct = 0, startTopPct = 0, dragRectW = 0, dragRectH = 0;
     wrap.addEventListener('pointerdown', (e) => {
       if (e.target === resizeHandle || e.target === delBtn) return;
       dragging = true;
       wrap.classList.add('dragging');
       wrap.setPointerCapture(e.pointerId);
+      const rect = pageEl.getBoundingClientRect();
+      dragRectW = rect.width; dragRectH = rect.height;
       startX = e.clientX; startY = e.clientY;
-      startLeft = parseFloat(wrap.style.left) || 0;
-      startTop = parseFloat(wrap.style.top) || 0;
+      startLeftPct = parseFloat(wrap.style.left) || 0;
+      startTopPct = parseFloat(wrap.style.top) || 0;
       e.preventDefault();
     });
     wrap.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      const rect = pageEl.getBoundingClientRect();
-      let newLeft = startLeft + (e.clientX - startX);
-      let newTop = startTop + (e.clientY - startY);
-      newLeft = Math.max(0, Math.min(newLeft, rect.width - wrap.offsetWidth));
-      newTop = Math.max(0, Math.min(newTop, rect.height - wrap.offsetHeight));
-      wrap.style.left = newLeft + 'px';
-      wrap.style.top = newTop + 'px';
+      if (!dragging || !dragRectW || !dragRectH) return;
+      const dxPct = ((e.clientX - startX) / dragRectW) * 100;
+      const dyPct = ((e.clientY - startY) / dragRectH) * 100;
+      const wPct = (wrap.offsetWidth / dragRectW) * 100;
+      const hPct = (wrap.offsetHeight / dragRectH) * 100;
+      let newLeft = Math.max(0, Math.min(startLeftPct + dxPct, Math.max(0, 100 - wPct)));
+      let newTop = Math.max(0, Math.min(startTopPct + dyPct, Math.max(0, 100 - hPct)));
+      wrap.style.left = newLeft + '%';
+      wrap.style.top = newTop + '%';
     });
     function endDrag(e){
       if (!dragging) return;
       dragging = false;
       wrap.classList.remove('dragging');
-      const rect = pageEl.getBoundingClientRect();
-      imgData.xPct = (parseFloat(wrap.style.left) / rect.width) * 100;
-      imgData.yPct = (parseFloat(wrap.style.top) / rect.height) * 100;
+      imgData.xPct = parseFloat(wrap.style.left) || 0;
+      imgData.yPct = parseFloat(wrap.style.top) || 0;
       persistImagePosition(pageIndex, imgIndex, imgData);
     }
     wrap.addEventListener('pointerup', endDrag);
     wrap.addEventListener('pointercancel', endDrag);
 
-    // ---- drag handle to resize ----
-    let resizing = false, rStartX = 0, rStartW = 0;
+    // ---- drag handle to resize (also tracked in %) ----
+    let resizing = false, rStartX = 0, rStartWpx = 0, resizeRectW = 0;
     resizeHandle.addEventListener('pointerdown', (e) => {
       resizing = true;
       resizeHandle.setPointerCapture(e.pointerId);
+      const rect = pageEl.getBoundingClientRect();
+      resizeRectW = rect.width;
       rStartX = e.clientX;
-      rStartW = wrap.offsetWidth;
+      rStartWpx = wrap.offsetWidth;
       e.stopPropagation();
       e.preventDefault();
     });
     resizeHandle.addEventListener('pointermove', (e) => {
-      if (!resizing) return;
-      const rect = pageEl.getBoundingClientRect();
-      let newW = Math.max(40, Math.min(rStartW + (e.clientX - rStartX), rect.width - parseFloat(wrap.style.left)));
-      wrap.style.width = newW + 'px';
-      wrap.style.height = (newW * aspect) + 'px';
+      if (!resizing || !resizeRectW) return;
+      const leftPct = parseFloat(wrap.style.left) || 0;
+      const maxWpx = resizeRectW * (1 - leftPct / 100);
+      const newWpx = Math.max(40, Math.min(rStartWpx + (e.clientX - rStartX), maxWpx));
+      wrap.style.width = ((newWpx / resizeRectW) * 100) + '%';
     });
     function endResize(e){
       if (!resizing) return;
       resizing = false;
-      const rect = pageEl.getBoundingClientRect();
-      imgData.wPct = (wrap.offsetWidth / rect.width) * 100;
+      imgData.wPct = parseFloat(wrap.style.width) || imgData.wPct;
       persistImagePosition(pageIndex, imgIndex, imgData);
     }
     resizeHandle.addEventListener('pointerup', endResize);
